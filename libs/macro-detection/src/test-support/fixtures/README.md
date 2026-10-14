@@ -16,6 +16,7 @@ None are synthesized or hand-edited.
 | `not-a-spreadsheet.pdf`  | A real PDF written by Excel (`%PDF-1.3`).                                                                                                            | rejected: `NOT_A_SPREADSHEET` |
 | `not-a-spreadsheet.docx` | A real Word document written by Word (`word/document.xml`, no `xl/` parts). Valid OOXML, but not a workbook.                                         | rejected: `NOT_A_SPREADSHEET` |
 | `not-a-spreadsheet.odt`  | A real OpenDocument text file written by Word (`mimetype` is `application/vnd.oasis.opendocument.text`). ODF packages have no `[Content_Types].xml`. | rejected: `UNPARSEABLE`       |
+| `basic.ods`              | A real one-cell OpenDocument spreadsheet from the Spout project (see below).                                                                         | rejected: `UNPARSEABLE`       |
 | `truncated-clean.xlsx`   | `clean.xlsx` cut to half its size; the ZIP central directory is gone.                                                                                | rejected: `UNPARSEABLE`       |
 | `truncated-vba.xlsm`     | `vba.xlsm` cut to half its size.                                                                                                                     | rejected: `UNPARSEABLE`       |
 | `truncated-vba.xls`      | `xls-vba.xls` cut to half its size (OLE2).                                                                                                           | rejected: `UNPARSEABLE`       |
@@ -61,13 +62,16 @@ osascript libs/macro-detection/scripts/make-word-fixtures.applescript not-a-spre
 osascript libs/macro-detection/scripts/make-word-fixtures.applescript not-a-spreadsheet.odt "$W"
 ```
 
-## Still missing
+## Third-party fixture
 
-`not-a-spreadsheet.ods`: a real OpenDocument spreadsheet. Excel and Numbers
-cannot write `.ods` and LibreOffice is not installed here, so it needs to come
-from LibreOffice Calc or Google Sheets (File > Download > OpenDocument
-Spreadsheet). It is an `it.todo` in `src/lib/fixtures.spec.ts`. The `.odt` above
-covers the same failure mode in the meantime.
+`basic.ods` is not generated here. It is `spout-ods_sheet_with_only_one_cell.ods`
+from the Spout project's test files (`box/spout`, Apache License 2.0), as
+collected in the SheetJS `test_files` repository, whose own README states that
+the `spout` files are Apache 2.0. It is a valid OpenDocument spreadsheet with one
+text cell (`foo`), creator "Spout", no macros and no personal data (checked by
+unzipping it). Excel and Numbers cannot write `.ods` and LibreOffice is not
+installed here. This tool only verifies OOXML and OLE2 workbooks, so it rejects
+the file as `UNPARSEABLE` (ODF has no `[Content_Types].xml`).
 
 ## VBA fixtures
 

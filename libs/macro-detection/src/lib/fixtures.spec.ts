@@ -26,8 +26,10 @@ describe.each([
   ['xls-vba-xlm.xls', 'rejected', ['VBA_PROJECT', 'XLM_MACRO_SHEET']],
   ['not-a-spreadsheet.pdf', 'rejected', ['NOT_A_SPREADSHEET']],
   ['not-a-spreadsheet.docx', 'rejected', ['NOT_A_SPREADSHEET']],
-  // ODF packages have no [Content_Types].xml, so they cannot be verified.
+  // ODF packages have no [Content_Types].xml, so they cannot be verified. A valid
+  // .ods is rejected too: this tool only verifies OOXML and OLE2 workbooks.
   ['not-a-spreadsheet.odt', 'rejected', ['UNPARSEABLE']],
+  ['basic.ods', 'rejected', ['UNPARSEABLE']],
   ['encrypted.xlsx', 'rejected', ['ENCRYPTED']],
   ['encrypted.xls', 'rejected', ['ENCRYPTED']],
   ['truncated-clean.xlsx', 'rejected', ['UNPARSEABLE']],
@@ -47,13 +49,6 @@ describe.each([
   it('reports the expected reason codes', () => {
     expect(result.reasons.map((r) => r.code)).toEqual(codes);
   });
-});
-
-// No installed app can write a real .ods (Excel and Numbers cannot, LibreOffice is
-// absent), so this waits for one made by LibreOffice or downloaded from Google Sheets.
-// Expected: rejected, UNPARSEABLE (ODF has no [Content_Types].xml), like the .odt above.
-describe('real fixture not-a-spreadsheet.ods', () => {
-  it.todo('is rejected as UNPARSEABLE');
 });
 
 // A damaged macro file must never read as clean: cut each one at every 1% mark.
