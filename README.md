@@ -45,10 +45,12 @@ from Let's Encrypt. Run these once while logged in to the Dokku host
 
 ```sh
 dokku apps:create excelsior
+dokku domains:set excelsior <your.domain>
+dokku ports:set excelsior http:80:5000
 dokku nginx:set excelsior client-max-body-size 55m
+dokku nginx:set excelsior hsts false
 dokku resource:limit --memory 384m excelsior
 dokku config:set --no-restart excelsior APP_PASSWORD='<password>' SESSION_SECRET="$(openssl rand -hex 32)"
-dokku letsencrypt:enable excelsior
 ```
 
 Then deploy from your machine:
@@ -58,6 +60,21 @@ git remote add dokku dokku@<host>:excelsior
 git push dokku main
 ```
 
+Once it is deployed, and DNS for the domain points at the host, back on the
+Dokku host:
+
+```sh
+dokku letsencrypt:enable excelsior
+dokku letsencrypt:cron-job --add
+```
+
+- `domains:set` replaces the default bare `excelsior` domain, which Let's
+  Encrypt rejects because it has no dot.
+- `ports:set` is needed because Dokku maps a Dockerfile's `EXPOSE 5000` to
+  public port 5000. This maps public port 80 to the container's 5000;
+  `letsencrypt:enable` adds the HTTPS mapping.
+- `hsts false` stops nginx adding a second `Strict-Transport-Security` header;
+  the app already sends its own.
 - `client-max-body-size` sits just above the 50 MiB batch cap (nginx defaults to
   1m, which would reject real uploads).
 - Uploads are held in memory. A maximum batch peaks around 150–200 MB, and only
