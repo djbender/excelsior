@@ -30,6 +30,22 @@ describe('GET /', () => {
     );
   });
 
+  it('lets the file input take multiple files', () => {
+    expect(response.text).toMatch(/<input[^>]+type="file"[^>]+multiple/);
+  });
+
+  it('has a drop zone', () => {
+    expect(response.text).toMatch(/id="dropzone"/);
+  });
+
+  it('handles the native drop event', () => {
+    expect(response.text).toMatch(/addEventListener\('drop'/);
+  });
+
+  it('posts to the batch endpoint', () => {
+    expect(response.text).toContain('/api/inspect-batch');
+  });
+
   it('contains an Inspect button', () => {
     expect(response.text).toMatch(/<button[^>]*>\s*Inspect\s*<\/button>/);
   });
