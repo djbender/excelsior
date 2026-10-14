@@ -1,0 +1,26 @@
+{
+  "name": "@org/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@nestjs/schematics": "^11.0.0",
+    "@nx/eslint": "23.2.0",
+    "@nx/js": "23.2.0",
+    "@nx/nest": "23.2.0",
+    "@nx/vitest": "23.2.0",
+    "@swc-node/register": "1.11.1",
+    "@swc/core": "1.15.8",
+    "@swc/helpers": "0.5.18",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.8.0",
+    "nx": "23.2.0",
+    "prettier": "^3.8.1",
+    "tslib": "^2.3.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.0",
+    "vitest": "~4.1.0"
+  }
+}
