@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { MAX_INPUT_BYTES } from '@org/macro-detection';
 import JSZip from 'jszip';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -79,5 +80,27 @@ describe('POST /api/inspect', () => {
   it('responds 400 when no file is attached', async () => {
     const response = await request(app.getHttpServer()).post('/api/inspect');
     expect(response.status).toBe(400);
+  });
+
+  it('responds 400 when two files are attached', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/inspect')
+      .attach('file', await workbook(false), 'one.xlsx')
+      .attach('file', await workbook(false), 'two.xlsx');
+    expect(response.status).toBe(400);
+  });
+
+  it('responds 400 when the file is in an unexpected field', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/inspect')
+      .attach('upload', await workbook(false), 'one.xlsx');
+    expect(response.status).toBe(400);
+  });
+
+  it('responds 413 when the file exceeds the upload limit', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/inspect')
+      .attach('file', Buffer.alloc(MAX_INPUT_BYTES + 1), 'huge.xlsx');
+    expect(response.status).toBe(413);
   });
 });

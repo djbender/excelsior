@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  MAX_INPUT_BYTES,
   inspectSpreadsheet,
   type InspectionResult,
 } from '@org/macro-detection';
@@ -16,7 +17,12 @@ import {
 export class InspectController {
   @Post('inspect')
   @HttpCode(200)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    // No `storage` option: multer defaults to memory, so uploads never touch disk.
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_INPUT_BYTES, files: 1 },
+    }),
+  )
   inspect(
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<InspectionResult> {
