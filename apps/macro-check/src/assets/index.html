@@ -28,8 +28,32 @@
       #result {
         margin-top: 1.5rem;
       }
-      .file {
-        margin-bottom: 1rem;
+      .result-card {
+        border: 1px solid #ccc;
+        border-left-width: 6px;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+      }
+      .result-card.accepted {
+        border-left-color: #146c2e;
+      }
+      .result-card.rejected {
+        border-left-color: #a61b1b;
+      }
+      .result-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: baseline;
+      }
+      .result-name {
+        font-family: ui-monospace, monospace;
+        overflow-wrap: anywhere;
+      }
+      .result-card ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1.25rem;
       }
       .verdict {
         font-weight: bold;
@@ -83,15 +107,17 @@
       function showResults(results) {
         result.replaceChildren(
           ...results.map((entry) => {
-            const block = text('div', 'file', '');
-            block.append(text('div', '', entry.name));
-            block.append(
+            const block = text('div', 'result-card ' + entry.verdict, '');
+            const head = text('div', 'result-head', '');
+            head.append(text('span', 'result-name', entry.name));
+            head.append(
               text(
-                'div',
+                'span',
                 'verdict ' + entry.verdict,
                 entry.verdict === 'accepted' ? 'ACCEPTED' : 'REJECTED',
               ),
             );
+            block.append(head);
             if (entry.reasons.length) {
               const list = document.createElement('ul');
               for (const reason of entry.reasons) {

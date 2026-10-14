@@ -42,6 +42,10 @@ describe('GET /', () => {
     expect(response.text).toMatch(/addEventListener\('drop'/);
   });
 
+  it('renders each file as its own result card', () => {
+    expect(response.text).toContain("'result-card");
+  });
+
   it('posts to the batch endpoint', () => {
     expect(response.text).toContain('/api/inspect-batch');
   });
