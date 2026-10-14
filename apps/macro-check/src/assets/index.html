@@ -24,9 +24,20 @@
       #selected {
         margin: 0.75rem 0 0;
         padding-left: 1.25rem;
+        max-height: 10rem;
+        overflow-y: auto;
+      }
+      #selected:empty {
+        display: none;
       }
       #result {
         margin-top: 1.5rem;
+        scroll-margin-top: 1rem;
+      }
+      .summary {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 0.75rem;
       }
       .result-card {
         border: 1px solid #ccc;
@@ -104,9 +115,25 @@
         result.replaceChildren(text('div', 'verdict ' + className, message));
       }
 
+      function summarize(results) {
+        const rejected = results.filter((r) => r.verdict === 'rejected').length;
+        const accepted = results.length - rejected;
+        const summary = text(
+          'div',
+          'summary ' + (rejected ? 'rejected' : 'accepted'),
+          accepted + ' accepted, ' + rejected + ' rejected',
+        );
+        return summary;
+      }
+
       function showResults(results) {
+        // Rejected files first: they are the ones that need attention.
+        const ordered = [...results].sort(
+          (a, b) => (b.verdict === 'rejected') - (a.verdict === 'rejected'),
+        );
         result.replaceChildren(
-          ...results.map((entry) => {
+          summarize(results),
+          ...ordered.map((entry) => {
             const block = text('div', 'result-card ' + entry.verdict, '');
             const head = text('div', 'result-head', '');
             head.append(text('span', 'result-name', entry.name));
@@ -187,6 +214,9 @@
           }
           const data = await response.json();
           showResults(data.results);
+          // The results already name every file, so free the space the list used.
+          selected.replaceChildren();
+          result.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (error) {
           showMessage('error', 'Network error. Nothing was checked.');
         }
