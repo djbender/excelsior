@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./libs/macro-detection"
+    },
+    {
+      "path": "./apps/macro-check"
     }
   ],
   "compilerOptions": {}
