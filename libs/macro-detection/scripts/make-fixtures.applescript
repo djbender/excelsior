@@ -18,7 +18,8 @@ on run argv
 		-- security` does not suppress it on macOS; answer "Disable Macros" (the VBA
 		-- project is still carried through Save As) or set Excel > Settings >
 		-- Security & Privacy > Macro Security to "Disable all macros without notification".
-		if fixtureName is "xls-vba.xls" or fixtureName is "vba.xlsb" or fixtureName is "xls-vba-xlm.xls" then
+		set vbaDerived to {"xls-vba.xls", "vba.xlsb", "xls-vba-xlm.xls", "vba.xlam", "vba.xltm"}
+		if vbaDerived contains fixtureName then
 			open workbook workbook file name (outDir & "/vba.xlsm")
 		else
 			make new workbook
@@ -61,6 +62,10 @@ on run argv
 				save workbook as wb filename target file format Excel98to2004 file format
 			else if fixtureName is "xls-vba.xls" then
 				save workbook as wb filename target file format Excel98to2004 file format
+			else if fixtureName is "vba.xlam" then
+				save workbook as wb filename target file format add in file format
+			else if fixtureName is "vba.xltm" then
+				save workbook as wb filename target file format macro enabled template file format
 			else if fixtureName is "vba.xlsb" then
 				save workbook as wb filename target file format Excel binary file format
 			else

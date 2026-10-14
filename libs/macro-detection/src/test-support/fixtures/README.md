@@ -47,6 +47,8 @@ container directory first:
 osascript libs/macro-detection/scripts/make-fixtures.applescript xls-vba.xls "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript vba.xlsb "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript xls-vba-xlm.xls "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript vba.xlam "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript vba.xltm "$C"
 ```
 
 Opening `vba.xlsm` makes Excel ask "Enable macros?". Scripting cannot suppress
@@ -59,4 +61,6 @@ to "Disable all macros without notification" while regenerating.
 | `vba.xlsm` | Hand-made macro-enabled workbook with one empty `Sub`. | rejected: `VBA_PROJECT` |
 | `xls-vba.xls` | `vba.xlsm` re-saved as Excel 97-2004. | rejected: `VBA_PROJECT` |
 | `vba.xlsb` | `vba.xlsm` re-saved as Excel binary. | rejected: `VBA_PROJECT` |
+| `vba.xlam` | `vba.xlsm` re-saved as an Excel add-in (main type `addin.macroEnabled.main+xml`). | rejected: `VBA_PROJECT` |
+| `vba.xltm` | `vba.xlsm` re-saved as a macro-enabled template (main type `template.macroEnabled.main+xml`). | rejected: `VBA_PROJECT` |
 | `xls-vba-xlm.xls` | `vba.xlsm` plus an Excel 4.0 macro sheet, saved as Excel 97-2004. | rejected: `VBA_PROJECT` and `XLM_MACRO_SHEET` |

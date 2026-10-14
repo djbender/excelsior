@@ -17,6 +17,8 @@ describe.each([
   ['clean.xlsb', 'accepted', []],
   ['vba.xlsm', 'rejected', ['VBA_PROJECT']],
   ['vba.xlsb', 'rejected', ['VBA_PROJECT']],
+  ['vba.xlam', 'rejected', ['VBA_PROJECT']],
+  ['vba.xltm', 'rejected', ['VBA_PROJECT']],
   ['xls-vba.xls', 'rejected', ['VBA_PROJECT']],
   ['xls-xlm.xls', 'rejected', ['XLM_MACRO_SHEET']],
   ['xlsm-xlm.xlsm', 'rejected', ['XLM_MACRO_SHEET']],
