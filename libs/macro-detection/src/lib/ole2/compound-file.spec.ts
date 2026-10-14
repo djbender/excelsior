@@ -115,6 +115,41 @@ describe('readCompoundFile: hand-built files', () => {
   });
 });
 
+// Real files seen in the wild (Apache POI's and pyExcelerator's test batteries) that
+// Excel and SheetJS open, but a strict reading of [MS-CFB] would refuse.
+describe('readCompoundFile: tolerated quirks of real files', () => {
+  it('reads a file whose last sector is cut short, when the stream fits', () => {
+    // Stream bytes needed from the last sector: 5000 - 9 * 512 = 392. Drop the other 120.
+    const file = rawCfb([
+      { path: 'Big', data: pattern(5000) },
+      { path: 'Small', data: 'still here' },
+    ]);
+    const cut = file.bytes.slice(0, file.bytes.length - 100);
+    expect(text(readCompoundFile(cut).read('/Small'))).toBe('still here');
+  });
+
+  it('reads a stream whose chain ends in a short sector that still holds its bytes', () => {
+    const data = pattern(5000);
+    const file = rawCfb([{ path: 'Big', data }]);
+    // The last sector holds 5000 - 9 * 512 = 392 bytes; keep 400 of its 512.
+    const cut = file.bytes.slice(0, file.bytes.length - 112);
+    expect(readCompoundFile(cut).read('/Big')).toEqual(data);
+  });
+
+  it('rejects a stream whose last sector is cut short into its data', () => {
+    const file = rawCfb([{ path: 'Big', data: pattern(5000) }]);
+    const cut = file.bytes.slice(0, file.bytes.length - 200);
+    expect(() => readCompoundFile(cut).read('/Big')).toThrow(/truncated/i);
+  });
+
+  it('treats the declared FAT sector count as an upper bound', () => {
+    const file = rawCfb([{ path: 'A', data: 'hello' }]);
+    // The header claims 109 FAT sectors; only the first DIFAT entry is real.
+    const bytes = patch(file, (view) => view.setUint32(44, 109, true));
+    expect(text(readCompoundFile(bytes).read('/A'))).toBe('hello');
+  });
+});
+
 describe('readCompoundFile: damaged and hostile files', () => {
   it('rejects bytes that are not a compound file', () => {
     expect(() => readCompoundFile(new Uint8Array(1024))).toThrow(/signature/i);

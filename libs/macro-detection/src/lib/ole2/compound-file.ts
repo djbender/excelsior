@@ -127,7 +127,9 @@ class Reader {
     }
 
     this.sectorSize = 1 << sectorShift;
-    this.sectorCount = Math.floor(this.buf.length / this.sectorSize) - 1;
+    // A last sector without its trailing padding still counts: real files lack it.
+    // Reads check that the bytes they need are actually there.
+    this.sectorCount = Math.ceil(this.buf.length / this.sectorSize) - 1;
     this.miniCutoff = this.header(56);
 
     this.fat = this.readFat();
@@ -153,28 +155,35 @@ class Reader {
   }
 
   private readFat(): number[] {
-    const fatSectorCount = this.header(44);
-    if (fatSectorCount > this.sectorCount) {
-      throw new Error('Corrupted compound file: more FAT sectors than sectors');
+    // The first 109 FAT sector numbers live in the header, the rest in DIFAT sectors.
+    // The header's FAT sector count is only trusted as far as the entries go: some
+    // writers over-declare it (pyExcelerator's test file claims 109 in a 9-sector
+    // file), so every real entry is read and the first free entry ends the list.
+    const fatSectors: number[] = [];
+    for (let i = 0; i < 109; i++) {
+      const id = this.header(76 + i * 4);
+      if (id === FREE_SECTOR) break;
+      fatSectors.push(id);
     }
 
-    // The first 109 FAT sector numbers live in the header; the rest in DIFAT sectors.
-    const fatSectors: number[] = [];
-    for (let i = 0; i < 109 && fatSectors.length < fatSectorCount; i++) {
-      fatSectors.push(this.header(76 + i * 4));
-    }
     let difatSector = this.header(68);
-    let difatLeft = this.header(72);
-    while (fatSectors.length < fatSectorCount) {
-      if (difatLeft === 0 || difatSector > MAX_REGULAR_SECTOR) {
-        throw new Error('Corrupted compound file: missing DIFAT sectors');
+    for (
+      let left = this.header(72), steps = 0;
+      left > 0 && difatSector <= MAX_REGULAR_SECTOR;
+      left--
+    ) {
+      if (++steps > this.sectorCount) {
+        throw new Error('Corrupted compound file: DIFAT chain loops');
       }
-      difatLeft--;
       const entries = this.u32s(this.sector(difatSector));
       for (const id of entries.slice(0, -1)) {
-        if (fatSectors.length < fatSectorCount) fatSectors.push(id);
+        if (id !== FREE_SECTOR) fatSectors.push(id);
       }
       difatSector = entries[entries.length - 1];
+    }
+
+    if (fatSectors.length === 0 || fatSectors.length > this.sectorCount) {
+      throw new Error('Corrupted compound file: bad FAT sector list');
     }
 
     const fat: number[] = [];
@@ -324,11 +333,17 @@ class Reader {
     }
     const out = new Uint8Array(entry.size);
     ids.forEach((id, i) => {
-      const part = this.sector(id).subarray(
-        0,
+      const wanted = Math.min(
+        this.sectorSize,
         entry.size - i * this.sectorSize,
       );
-      if (part.length > 0) out.set(part, i * this.sectorSize);
+      if (wanted <= 0) return;
+      // The file's last sector may lack its padding, but not bytes the stream needs.
+      const sector = this.sector(id);
+      if (sector.length < wanted) {
+        throw new Error('Corrupted compound file: stream data is truncated');
+      }
+      out.set(sector.subarray(0, wanted), i * this.sectorSize);
     });
     return out;
   }
