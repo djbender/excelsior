@@ -1,0 +1,9 @@
+.git
+.nx
+.claude
+.vscode
+node_modules
+**/node_modules
+**/dist
+**/out-tsc
+tmp

@@ -24,6 +24,20 @@ describe('GET /', () => {
     expect(response.headers['content-type']).toMatch(/text\/html/);
   });
 
+  it('does not advertise Express', () => {
+    expect(response.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('sets a CSP that blocks unhashed scripts', () => {
+    expect(response.headers['content-security-policy']).toMatch(
+      /script-src 'self' 'sha256-[A-Za-z0-9+/=]+'(;|$)/,
+    );
+  });
+
+  it('sets HSTS', () => {
+    expect(response.headers['strict-transport-security']).toBeDefined();
+  });
+
   it('contains a labeled file input', () => {
     expect(response.text).toMatch(
       /<label[^>]+for="file"[\s\S]*<input[^>]+type="file"/,

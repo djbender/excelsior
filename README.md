@@ -18,9 +18,34 @@ pnpm serve
 
 Then open <http://localhost:3000> and drop files on the page.
 
-The server binds to `localhost` only, has no auth, and keeps uploads in memory.
-Nothing is written to disk or persisted, and file contents are never logged.
-Set `PORT` to change the port.
+The server binds to `localhost` by default, has no auth of its own, and keeps
+uploads in memory. Nothing is written to disk or persisted, and file contents
+are never logged. Set `PORT` to change the port and `HOST` to change the
+interface; if you expose it beyond localhost, put authentication in front.
+
+## Deployment (Dokku)
+
+The root `Dockerfile` builds a production image that runs as a non-root user on
+`HOST=0.0.0.0`, `PORT=5000`. The app has no auth, so nginx basic auth plus TLS
+protect it. Run these once on the Dokku host, then deploy by pushing:
+
+```sh
+dokku apps:create macro-check
+dokku nginx:set macro-check client-max-body-size 55m
+dokku resource:limit --memory 384m macro-check
+dokku http-auth:enable macro-check <user> <pass>
+dokku letsencrypt:enable macro-check
+git push dokku main
+```
+
+- `client-max-body-size` sits just above the 50 MiB batch cap (nginx defaults to
+  1m, which would reject real uploads).
+- Uploads are held in memory. A maximum batch peaks around 150–200 MB, and only
+  `[Content_Types].xml` (at most 1 MB) is ever unpacked from a zip, so memory
+  scales with upload size, not with what a zip would inflate to. The 384m cap is
+  a ceiling for runaways, not a reservation.
+- Responses carry a CSP (the page's inline script and style are allowed by
+  hash), HSTS, and the other helmet defaults.
 
 ## Layout
 
