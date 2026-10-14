@@ -27,14 +27,21 @@ osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsm "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsb "$C"
 ```
 
-## Still missing
+## VBA fixtures
 
 Excel's AppleScript dictionary has no VBA project or VBE classes, so a VBA
-module cannot be inserted by script. One workbook must be authored by hand
-(Excel, Developer tab, Visual Basic, Insert Module, add a trivial `Sub`, save
-as `vba.xlsm`). The script then derives the other two from it. These are
-tracked as `it.todo` in `src/lib/fixtures.spec.ts`:
+module cannot be inserted by script. `vba.xlsm` was authored by hand in Excel
+(Developer tab, Visual Basic, Insert Module, an empty `Sub Hello()`, saved as
+.xlsm). The script derives the other two from it, so `vba.xlsm` must be in the
+container directory first:
 
-- `vba.xlsm`: macro-enabled workbook containing a VBA module (hand-made)
-- `xls-vba.xls`: `vba.xlsm` re-saved as Excel 97-2004
-- `vba.xlsb`: `vba.xlsm` re-saved as Excel binary
+```sh
+osascript libs/macro-detection/scripts/make-fixtures.applescript xls-vba.xls "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript vba.xlsb "$C"
+```
+
+| File | Contents | Expected verdict |
+| --- | --- | --- |
+| `vba.xlsm` | Hand-made macro-enabled workbook with one empty `Sub`. | rejected: `VBA_PROJECT` |
+| `xls-vba.xls` | `vba.xlsm` re-saved as Excel 97-2004. | rejected: `VBA_PROJECT` |
+| `vba.xlsb` | `vba.xlsm` re-saved as Excel binary. | rejected: `VBA_PROJECT` |

@@ -14,6 +14,9 @@ describe.each([
   ['clean.xls', 'accepted', []],
   ['clean.xlsm', 'accepted', []],
   ['clean.xlsb', 'accepted', []],
+  ['vba.xlsm', 'rejected', ['VBA_PROJECT']],
+  ['vba.xlsb', 'rejected', ['VBA_PROJECT']],
+  ['xls-vba.xls', 'rejected', ['VBA_PROJECT']],
   ['xls-xlm.xls', 'rejected', ['XLM_MACRO_SHEET']],
   ['encrypted.xlsx', 'rejected', ['ENCRYPTED']],
 ] as const)('real fixture %s', (name, verdict, codes) => {
@@ -30,10 +33,4 @@ describe.each([
   it('reports the expected reason codes', () => {
     expect(result.reasons.map((r) => r.code)).toEqual(codes);
   });
-});
-
-describe('real fixtures needing VBA (cannot be scripted; see README)', () => {
-  it.todo('rejects xls-vba.xls as VBA_PROJECT');
-  it.todo('rejects vba.xlsm as VBA_PROJECT');
-  it.todo('rejects vba.xlsb as VBA_PROJECT');
 });
