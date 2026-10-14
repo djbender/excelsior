@@ -5,15 +5,21 @@ export interface ContentTypesSpec {
   overrides?: Record<string, string>;
 }
 
-export const MAIN_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml';
+export const MAIN_XLSX =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml';
 export const MAIN_XLSM = 'application/vnd.ms-excel.sheet.macroEnabled.main+xml';
 export const VBA_PROJECT = 'application/vnd.ms-office.vbaProject';
 export const MACRO_SHEET = 'application/vnd.ms-excel.macrosheet+xml';
-export const WORKSHEET = 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml';
+export const WORKSHEET =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml';
 
-export function contentTypes({ defaults = {}, overrides = {} }: ContentTypesSpec = {}): string {
+export function contentTypes({
+  defaults = {},
+  overrides = {},
+}: ContentTypesSpec = {}): string {
   const defaultTags = Object.entries(defaults).map(
-    ([extension, type]) => `<Default Extension="${extension}" ContentType="${type}"/>`,
+    ([extension, type]) =>
+      `<Default Extension="${extension}" ContentType="${type}"/>`,
   );
   const overrideTags = Object.entries(overrides).map(
     ([part, type]) => `<Override PartName="${part}" ContentType="${type}"/>`,

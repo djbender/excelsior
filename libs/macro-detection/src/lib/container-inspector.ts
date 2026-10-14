@@ -6,5 +6,8 @@ export interface ContainerInspector {
   inspect(buf: Uint8Array): Promise<Reason[]>;
 }
 
-export const startsWith = (buf: Uint8Array, magic: readonly number[]): boolean =>
+export const startsWith = (
+  buf: Uint8Array,
+  magic: readonly number[],
+): boolean =>
   buf.length >= magic.length && magic.every((byte, i) => buf[i] === byte);

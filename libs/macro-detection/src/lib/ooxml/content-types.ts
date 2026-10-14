@@ -14,7 +14,8 @@ function attributesOf(raw: string): Map<string, string> {
   return attributes;
 }
 
-const normalizePart = (name: string): string => '/' + name.replace(/^\/+/, '').toLowerCase();
+const normalizePart = (name: string): string =>
+  '/' + name.replace(/^\/+/, '').toLowerCase();
 
 export function parseContentTypes(xml: string): ContentTypes {
   const defaults = new Map<string, string>();
@@ -26,10 +27,12 @@ export function parseContentTypes(xml: string): ContentTypes {
     if (contentType === undefined) continue;
     if (tag === 'Default') {
       const extension = attributes.get('extension');
-      if (extension !== undefined) defaults.set(extension.toLowerCase(), contentType);
+      if (extension !== undefined)
+        defaults.set(extension.toLowerCase(), contentType);
     } else {
       const partName = attributes.get('partname');
-      if (partName !== undefined) overrides.set(normalizePart(partName), contentType);
+      if (partName !== undefined)
+        overrides.set(normalizePart(partName), contentType);
     }
   }
 
@@ -38,7 +41,9 @@ export function parseContentTypes(xml: string): ContentTypes {
       const override = overrides.get(normalizePart(entryName));
       if (override !== undefined) return override;
       const dot = entryName.lastIndexOf('.');
-      return dot === -1 ? undefined : defaults.get(entryName.slice(dot + 1).toLowerCase());
+      return dot === -1
+        ? undefined
+        : defaults.get(entryName.slice(dot + 1).toLowerCase());
     },
   };
 }

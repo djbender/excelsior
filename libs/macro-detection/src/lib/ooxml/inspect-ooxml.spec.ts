@@ -11,12 +11,18 @@ import {
 import { inspectSpreadsheet } from '../inspect-spreadsheet.js';
 import type { InspectionResult } from '../types.js';
 
-const xmlDefaults = { xml: 'application/xml', rels: 'application/vnd.openxmlformats-package.relationships+xml' };
+const xmlDefaults = {
+  xml: 'application/xml',
+  rels: 'application/vnd.openxmlformats-package.relationships+xml',
+};
 
 const cleanParts = (main: string) => ({
   '[Content_Types].xml': contentTypes({
     defaults: xmlDefaults,
-    overrides: { '/xl/workbook.xml': main, '/xl/worksheets/sheet1.xml': WORKSHEET },
+    overrides: {
+      '/xl/workbook.xml': main,
+      '/xl/worksheets/sheet1.xml': WORKSHEET,
+    },
   }),
   'xl/workbook.xml': '<workbook/>',
   'xl/worksheets/sheet1.xml': '<worksheet/>',
@@ -25,12 +31,19 @@ const cleanParts = (main: string) => ({
 describe('inspectSpreadsheet: OOXML', () => {
   const scenarios: [string, () => Promise<Uint8Array>, string[], string[]][] = [
     ['a clean .xlsx', () => buildOoxml(cleanParts(MAIN_XLSX)), [], []],
-    ['a clean .xlsm (macroEnabled main type, no VBA)', () => buildOoxml(cleanParts(MAIN_XLSM)), [], []],
+    [
+      'a clean .xlsm (macroEnabled main type, no VBA)',
+      () => buildOoxml(cleanParts(MAIN_XLSM)),
+      [],
+      [],
+    ],
     [
       'a vbaProject.bin declared through a Default extension',
       () =>
         buildOoxml({
-          '[Content_Types].xml': contentTypes({ defaults: { ...xmlDefaults, bin: VBA_PROJECT } }),
+          '[Content_Types].xml': contentTypes({
+            defaults: { ...xmlDefaults, bin: VBA_PROJECT },
+          }),
           'xl/vbaProject.bin': 'binary',
         }),
       ['VBA_PROJECT'],
@@ -117,9 +130,11 @@ describe('inspectSpreadsheet: OOXML', () => {
     });
 
     it('names each offending part in the detail', () => {
-      expect(result.reasons.map((r) => parts.some((part) => r.detail.includes(part)))).toEqual(
-        codes.map(() => true),
-      );
+      expect(
+        result.reasons.map((r) =>
+          parts.some((part) => r.detail.includes(part)),
+        ),
+      ).toEqual(codes.map(() => true));
     });
   });
 
@@ -127,7 +142,9 @@ describe('inspectSpreadsheet: OOXML', () => {
     let result: InspectionResult;
 
     beforeAll(async () => {
-      result = await inspectSpreadsheet(await buildOoxml({ 'readme.txt': 'not office' }));
+      result = await inspectSpreadsheet(
+        await buildOoxml({ 'readme.txt': 'not office' }),
+      );
     });
 
     it('is rejected', () => {
