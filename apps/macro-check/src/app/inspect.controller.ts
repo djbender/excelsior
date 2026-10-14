@@ -11,7 +11,7 @@ import {
   MAX_INPUT_BYTES,
   inspectSpreadsheet,
   type InspectionResult,
-} from '@org/macro-detection';
+} from '@djbender/macro-detection';
 
 @Controller('api')
 export class InspectController {

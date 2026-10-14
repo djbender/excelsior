@@ -4,7 +4,7 @@ export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/libs/macro-detection',
   test: {
-    name: '@org/macro-detection',
+    name: '@djbender/macro-detection',
     watch: false,
     globals: true,
     environment: 'node',

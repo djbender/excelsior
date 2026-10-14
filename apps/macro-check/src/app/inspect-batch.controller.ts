@@ -11,7 +11,7 @@ import {
   MAX_INPUT_BYTES,
   inspectSpreadsheet,
   type InspectionResult,
-} from '@org/macro-detection';
+} from '@djbender/macro-detection';
 import { BoundedMemoryStorage } from './bounded-memory-storage';
 
 /** Combined size of all files in one batch. Each file is still capped by MAX_INPUT_BYTES. */

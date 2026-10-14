@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @org/macro-check with Nx",
+      "name": "Debug @djbender/macro-check with Nx",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "nx", "serve", "@org/macro-check"],
+      "runtimeArgs": ["exec", "nx", "serve", "@djbender/macro-check"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },

@@ -30,11 +30,11 @@ The root `Dockerfile` builds a production image that runs as a non-root user on
 protect it. Run these once on the Dokku host, then deploy by pushing:
 
 ```sh
-dokku apps:create macro-check
-dokku nginx:set macro-check client-max-body-size 55m
-dokku resource:limit --memory 384m macro-check
-dokku http-auth:enable macro-check <user> <pass>
-dokku letsencrypt:enable macro-check
+dokku apps:create excelsior
+dokku nginx:set excelsior client-max-body-size 55m
+dokku resource:limit --memory 384m excelsior
+dokku http-auth:enable excelsior <user> <pass>
+dokku letsencrypt:enable excelsior
 git push dokku main
 ```
 
@@ -69,7 +69,7 @@ git push dokku main
 ## Library
 
 ```ts
-import { inspectSpreadsheet } from '@org/macro-detection';
+import { inspectSpreadsheet } from '@djbender/macro-detection';
 
 const result = await inspectSpreadsheet(bytes); // Uint8Array
 // { verdict: 'accepted' | 'rejected', reasons: [{ code, detail }] }

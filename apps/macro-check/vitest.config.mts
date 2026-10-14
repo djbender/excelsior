@@ -17,10 +17,10 @@ export default defineConfig(() => ({
   ],
   resolve: {
     // Resolve the workspace lib from source so tests need no prior lib build.
-    conditions: ['@org/source'],
+    conditions: ['@djbender/source'],
   },
   test: {
-    name: '@org/macro-check',
+    name: '@djbender/macro-check',
     watch: false,
     globals: true,
     environment: 'node',

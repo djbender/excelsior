@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { MAX_INPUT_BYTES } from '@org/macro-detection';
+import { MAX_INPUT_BYTES } from '@djbender/macro-detection';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { MAX_BATCH_FILES, MAX_BATCH_BYTES } from './inspect-batch.controller';

@@ -8,7 +8,7 @@ RUN npm install --prefix /home/node/pnpm pnpm@12.8.1
 WORKDIR /home/node/repo
 COPY --chown=node:node . .
 RUN pnpm install --frozen-lockfile \
- && pnpm nx run @org/macro-check:prune --configuration=production \
+ && pnpm nx run @djbender/macro-check:prune --configuration=production \
  && cd apps/macro-check/dist \
  && pnpm install --prod --frozen-lockfile
 

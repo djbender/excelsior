@@ -1,9 +1,9 @@
 {
-  "name": "@org/source",
+  "name": "@djbender/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "serve": "nx serve @org/macro-check --tui=false",
+    "serve": "nx serve @djbender/macro-check --tui=false",
     "format": "prettier --write . --log-level warn",
     "format:check": "prettier --check .",
     "typecheck": "nx run-many -t typecheck",
