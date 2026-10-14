@@ -66,6 +66,9 @@ git push dokku main
   a ceiling for runaways, not a reservation.
 - Responses carry a CSP (the page's inline script and style are allowed by
   hash), HSTS, and the other helmet defaults.
+- `app.json` defines the startup healthcheck: Dokku requests `/login` (the one
+  page that answers 200 without a session) and only routes traffic to the new
+  container once it responds.
 
 ## Layout
 

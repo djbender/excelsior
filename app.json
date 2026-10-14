@@ -1,0 +1,15 @@
+{
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "name": "login page",
+        "description": "The login page answers 200 without a session",
+        "path": "/login",
+        "attempts": 5,
+        "timeout": 5,
+        "wait": 3
+      }
+    ]
+  }
+}
