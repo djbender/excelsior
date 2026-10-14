@@ -1,53 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import {
+  BIFF5,
+  BIFF8,
+  biffStream,
+  bof,
+  boundSheet,
+  eof,
+  record,
+} from '../../test-support/raw-biff.js';
 import { LimitExceededError } from '../errors.js';
 import { scanWorkbookGlobals } from './biff.js';
 import { readCompoundFile } from './compound-file.js';
 
-// --- hand-built BIFF records -----------------------------------------------------
-
-const BIFF8 = 0x0600;
-const BIFF5 = 0x0500;
-
-const record = (type: number, data: number[] = []): number[] => [
-  type & 0xff,
-  type >> 8,
-  data.length & 0xff,
-  data.length >> 8,
-  ...data,
-];
-
-const u16 = (value: number) => [value & 0xff, value >> 8];
-
-/** BOF for the workbook globals (0x0005) or another substream type. */
-const bof = (version = BIFF8, substream = 0x0005) =>
-  record(0x0809, [
-    ...u16(version),
-    ...u16(substream),
-    ...new Array(12).fill(0),
-  ]);
-
-const eof = () => record(0x000a);
-
-/** BoundSheet8: position, state, sheet type, then the name. */
-const boundSheet = (name: string, type: number, version = BIFF8) => {
-  const head = [0, 0, 0, 0, 0, type];
-  if (version < BIFF8) {
-    return record(0x0085, [
-      ...head,
-      name.length,
-      ...[...name].map((c) => c.charCodeAt(0)),
-    ]);
-  }
-  const wide = [...name].some((c) => c.charCodeAt(0) > 0xff);
-  const chars = wide
-    ? [...name].flatMap((c) => u16(c.charCodeAt(0)))
-    : [...name].map((c) => c.charCodeAt(0));
-  return record(0x0085, [...head, name.length, wide ? 1 : 0, ...chars]);
-};
-
-const stream = (...records: number[][]) => Uint8Array.from(records.flat());
+const stream = biffStream;
 
 // --- real files ------------------------------------------------------------------
 
