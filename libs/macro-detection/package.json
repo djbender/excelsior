@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "jszip": "^3.10.2",
-    "tslib": "^2.3.0",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+    "tslib": "^2.3.0"
   }
 }
