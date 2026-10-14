@@ -16,6 +16,9 @@ on run argv
 			if fixtureName is "not-a-spreadsheet.docx" then
 				insert text "not a spreadsheet" at text object of active document
 				save as active document file name target file format format document
+			else if fixtureName is "not-a-spreadsheet.odt" then
+				insert text "not a spreadsheet" at text object of active document
+				save as active document file name target file format format ODT
 			else
 				error "Unknown fixture " & fixtureName
 			end if

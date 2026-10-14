@@ -4,22 +4,23 @@ Produced by real Microsoft Excel for Mac 16.113.4 using
 [`scripts/make-fixtures.applescript`](../../../scripts/make-fixtures.applescript).
 None are synthesized or hand-edited.
 
-| File                     | Contents                                                                                                                                           | Expected verdict              |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `clean.xls`              | One sheet, cell A1 = "clean". Saved as Excel 97-2004.                                                                                              | accepted                      |
-| `clean.xlsm`             | Saved as macro-enabled .xlsm, but with no VBA module. Proves "capable of macros" is not "has macros".                                              | accepted                      |
-| `clean.xlsb`             | Saved as .xlsb, no VBA module.                                                                                                                     | accepted                      |
-| `clean.xlsx`             | Plain .xlsx, one cell.                                                                                                                             | accepted                      |
-| `xlsm-xlm.xlsm`          | Excel 4.0 macro sheet saved into a macro-enabled .xlsm (`xl/macrosheets/sheet1.xml`), no VBA.                                                      | rejected: `XLM_MACRO_SHEET`   |
-| `xlsb-xlm.xlsb`          | Excel 4.0 macro sheet saved into an .xlsb (`xl/macrosheets/sheet1.bin`), no VBA.                                                                   | rejected: `XLM_MACRO_SHEET`   |
-| `encrypted.xls`          | Legacy .xls saved with an open password (`fixture-password`); BIFF `FilePass` record.                                                              | rejected: `ENCRYPTED`         |
-| `not-a-spreadsheet.pdf`  | A real PDF written by Excel (`%PDF-1.3`).                                                                                                          | rejected: `NOT_A_SPREADSHEET` |
-| `not-a-spreadsheet.docx` | A real Word document written by Word (`word/document.xml`, no `xl/` parts). Valid OOXML, but not a workbook.                                       | rejected: `NOT_A_SPREADSHEET` |
-| `truncated-clean.xlsx`   | `clean.xlsx` cut to half its size; the ZIP central directory is gone.                                                                              | rejected: `UNPARSEABLE`       |
-| `truncated-vba.xlsm`     | `vba.xlsm` cut to half its size.                                                                                                                   | rejected: `UNPARSEABLE`       |
-| `truncated-vba.xls`      | `xls-vba.xls` cut to half its size (OLE2).                                                                                                         | rejected: `UNPARSEABLE`       |
-| `xls-xlm.xls`            | An Excel 4.0 macro sheet with `=HALT()` in A1, plus a worksheet. Saved as Excel 97-2004.                                                           | rejected: `XLM_MACRO_SHEET`   |
-| `encrypted.xlsx`         | Saved as .xlsx with an open password (`fixture-password`). Excel stores this as an OLE2 container holding `EncryptionInfo` and `EncryptedPackage`. | rejected: `ENCRYPTED`         |
+| File                     | Contents                                                                                                                                             | Expected verdict              |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `clean.xls`              | One sheet, cell A1 = "clean". Saved as Excel 97-2004.                                                                                                | accepted                      |
+| `clean.xlsm`             | Saved as macro-enabled .xlsm, but with no VBA module. Proves "capable of macros" is not "has macros".                                                | accepted                      |
+| `clean.xlsb`             | Saved as .xlsb, no VBA module.                                                                                                                       | accepted                      |
+| `clean.xlsx`             | Plain .xlsx, one cell.                                                                                                                               | accepted                      |
+| `xlsm-xlm.xlsm`          | Excel 4.0 macro sheet saved into a macro-enabled .xlsm (`xl/macrosheets/sheet1.xml`), no VBA.                                                        | rejected: `XLM_MACRO_SHEET`   |
+| `xlsb-xlm.xlsb`          | Excel 4.0 macro sheet saved into an .xlsb (`xl/macrosheets/sheet1.bin`), no VBA.                                                                     | rejected: `XLM_MACRO_SHEET`   |
+| `encrypted.xls`          | Legacy .xls saved with an open password (`fixture-password`); BIFF `FilePass` record.                                                                | rejected: `ENCRYPTED`         |
+| `not-a-spreadsheet.pdf`  | A real PDF written by Excel (`%PDF-1.3`).                                                                                                            | rejected: `NOT_A_SPREADSHEET` |
+| `not-a-spreadsheet.docx` | A real Word document written by Word (`word/document.xml`, no `xl/` parts). Valid OOXML, but not a workbook.                                         | rejected: `NOT_A_SPREADSHEET` |
+| `not-a-spreadsheet.odt`  | A real OpenDocument text file written by Word (`mimetype` is `application/vnd.oasis.opendocument.text`). ODF packages have no `[Content_Types].xml`. | rejected: `UNPARSEABLE`       |
+| `truncated-clean.xlsx`   | `clean.xlsx` cut to half its size; the ZIP central directory is gone.                                                                                | rejected: `UNPARSEABLE`       |
+| `truncated-vba.xlsm`     | `vba.xlsm` cut to half its size.                                                                                                                     | rejected: `UNPARSEABLE`       |
+| `truncated-vba.xls`      | `xls-vba.xls` cut to half its size (OLE2).                                                                                                           | rejected: `UNPARSEABLE`       |
+| `xls-xlm.xls`            | An Excel 4.0 macro sheet with `=HALT()` in A1, plus a worksheet. Saved as Excel 97-2004.                                                             | rejected: `XLM_MACRO_SHEET`   |
+| `encrypted.xlsx`         | Saved as .xlsx with an open password (`fixture-password`). Excel stores this as an OLE2 container holding `EncryptionInfo` and `EncryptedPackage`.   | rejected: `ENCRYPTED`         |
 
 ## Regenerating
 
@@ -57,7 +58,16 @@ Word fixtures use a separate script, and Word has its own container:
 W=~/Library/Containers/com.microsoft.Word/Data/fixtures
 mkdir -p "$W"
 osascript libs/macro-detection/scripts/make-word-fixtures.applescript not-a-spreadsheet.docx "$W"
+osascript libs/macro-detection/scripts/make-word-fixtures.applescript not-a-spreadsheet.odt "$W"
 ```
+
+## Still missing
+
+`not-a-spreadsheet.ods`: a real OpenDocument spreadsheet. Excel and Numbers
+cannot write `.ods` and LibreOffice is not installed here, so it needs to come
+from LibreOffice Calc or Google Sheets (File > Download > OpenDocument
+Spreadsheet). It is an `it.todo` in `src/lib/fixtures.spec.ts`. The `.odt` above
+covers the same failure mode in the meantime.
 
 ## VBA fixtures
 
