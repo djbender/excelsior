@@ -18,23 +18,43 @@ pnpm serve
 
 Then open <http://localhost:3000> and drop files on the page.
 
-The server binds to `localhost` by default, has no auth of its own, and keeps
-uploads in memory. Nothing is written to disk or persisted, and file contents
-are never logged. Set `PORT` to change the port and `HOST` to change the
-interface; if you expose it beyond localhost, put authentication in front.
+The server binds to `localhost` by default and keeps uploads in memory. Nothing
+is written to disk or persisted, and file contents are never logged. Set `PORT`
+to change the port and `HOST` to change the interface.
+
+### Password gate
+
+Set `APP_PASSWORD` to require a shared password: visitors sign in at `/login`
+and get a signed, HttpOnly, SameSite=Strict cookie that lasts 12 hours. Without
+it the app is open, and it refuses to start if `HOST` is anything but
+localhost. Set `SESSION_SECRET` to keep sessions across restarts (otherwise a
+random key is made at each start, which signs everyone out).
+
+The form uses `@nestjs/throttler`: more than five login attempts from one
+client address in 15 minutes get `429` with `Retry-After`, even with the right
+password. The counts are in memory, so a restart clears them. Behind a reverse proxy, set `TRUST_PROXY=1` (the
+Dockerfile does) so the address is the real client's and not the proxy's.
+Without it, every visitor would share one counter.
 
 ## Deployment (Dokku)
 
 The root `Dockerfile` builds a production image that runs as a non-root user on
-`HOST=0.0.0.0`, `PORT=5000`. The app has no auth, so nginx basic auth plus TLS
-protect it. Run these once on the Dokku host, then deploy by pushing:
+`HOST=0.0.0.0`, `PORT=5000`. The app's own password gate protects it, with TLS
+from Let's Encrypt. Run these once while logged in to the Dokku host
+(`nginx:set` was rejected when run through the local `dokku` client script):
 
 ```sh
 dokku apps:create excelsior
 dokku nginx:set excelsior client-max-body-size 55m
 dokku resource:limit --memory 384m excelsior
-dokku http-auth:enable excelsior <user> <pass>
+dokku config:set --no-restart excelsior APP_PASSWORD='<password>' SESSION_SECRET="$(openssl rand -hex 32)"
 dokku letsencrypt:enable excelsior
+```
+
+Then deploy from your machine:
+
+```sh
+git remote add dokku dokku@<host>:excelsior
 git push dokku main
 ```
 

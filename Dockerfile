@@ -18,6 +18,6 @@ FROM node:26-slim
 USER node
 WORKDIR /home/node/app
 COPY --from=build --chown=node:node /home/node/repo/apps/macro-check/dist ./
-ENV NODE_ENV=production HOST=0.0.0.0 PORT=5000
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=5000 TRUST_PROXY=1
 EXPOSE 5000
 CMD ["node", "main.js"]
