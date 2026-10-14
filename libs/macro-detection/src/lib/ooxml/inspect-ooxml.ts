@@ -3,7 +3,7 @@ import { startsWith, type ContainerInspector } from '../container-inspector.js';
 import type { Reason } from '../types.js';
 import { parseContentTypes } from './content-types.js';
 import {
-  assertDeclaredEntryCount,
+  assertCentralDirectoryEntryCount,
   assertEntryCount,
   readCappedText,
 } from './zip-guards.js';
@@ -44,7 +44,7 @@ function reasonsForEntry(
 export const ooxmlInspector: ContainerInspector = {
   matches: (buf) => startsWith(buf, ZIP_MAGIC),
   async inspect(buf) {
-    assertDeclaredEntryCount(buf);
+    assertCentralDirectoryEntryCount(buf);
     const zip = await JSZip.loadAsync(buf);
     assertEntryCount(Object.keys(zip.files).length);
     const manifest = await readCappedText(zip, CONTENT_TYPES_PART);
