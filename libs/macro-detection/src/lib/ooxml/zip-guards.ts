@@ -37,17 +37,23 @@ export function assertEntryCount(count: number): void {
 }
 
 /**
- * Counts the central directory's real entries before JSZip parses the archive.
+ * Reads the entry names from the central directory before JSZip parses the archive.
  *
  * JSZip walks the central directory by signature and ignores the count in the
  * end record, so a file can declare 2 entries and hold hundreds of thousands, each
  * costing JSZip memory. This walk is bounded: it stops one entry past the limit.
- * It leaves a missing end record to JSZip, which reports it as a corrupt archive.
+ * It leaves a missing end record to JSZip, which reports it as a corrupt archive,
+ * and returns undefined in that case.
+ *
+ * Excel names entries from the central directory, while JSZip names them from the
+ * local headers, so the caller compares the two lists.
  */
-export function assertCentralDirectoryEntryCount(buf: Uint8Array): void {
+export function readCentralDirectoryNames(
+  buf: Uint8Array,
+): string[] | undefined {
   const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   const endRecord = findEndRecord(view);
-  if (endRecord === undefined) return;
+  if (endRecord === undefined) return undefined;
 
   const bounds = readCentralDirectoryBounds(view, endRecord);
   const end = bounds.offset + bounds.size;
@@ -55,8 +61,9 @@ export function assertCentralDirectoryEntryCount(buf: Uint8Array): void {
     throw new Error('Corrupted zip: central directory overruns the archive');
   }
 
+  const decoder = new TextDecoder();
+  const names: string[] = [];
   let offset = bounds.offset;
-  let entries = 0;
   while (offset < end) {
     if (
       offset + CENTRAL_HEADER_SIZE > end ||
@@ -64,14 +71,22 @@ export function assertCentralDirectoryEntryCount(buf: Uint8Array): void {
     ) {
       throw new Error('Corrupted zip: bad central directory entry');
     }
-    entries++;
-    assertEntryCount(entries);
-    offset +=
-      CENTRAL_HEADER_SIZE +
-      view.getUint16(offset + 28, true) + // file name length
-      view.getUint16(offset + 30, true) + // extra field length
-      view.getUint16(offset + 32, true); // comment length
+    const nameLength = view.getUint16(offset + 28, true);
+    const extraLength = view.getUint16(offset + 30, true);
+    const commentLength = view.getUint16(offset + 32, true);
+    const next =
+      offset + CENTRAL_HEADER_SIZE + nameLength + extraLength + commentLength;
+    if (next > end) {
+      throw new Error('Corrupted zip: central directory entry overruns');
+    }
+    assertEntryCount(names.length + 1);
+    const nameStart = buf.byteOffset + offset + CENTRAL_HEADER_SIZE;
+    names.push(
+      decoder.decode(new Uint8Array(buf.buffer, nameStart, nameLength)),
+    );
+    offset = next;
   }
+  return names;
 }
 
 function findEndRecord(view: DataView): number | undefined {

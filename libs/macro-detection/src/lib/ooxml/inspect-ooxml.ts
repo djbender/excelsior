@@ -3,9 +3,9 @@ import { startsWith, type ContainerInspector } from '../container-inspector.js';
 import type { Reason } from '../types.js';
 import { parseContentTypes } from './content-types.js';
 import {
-  assertCentralDirectoryEntryCount,
   assertEntryCount,
   readCappedText,
+  readCentralDirectoryNames,
 } from './zip-guards.js';
 
 const ZIP_MAGIC = [0x50, 0x4b, 0x03, 0x04] as const;
@@ -44,20 +44,24 @@ function reasonsForEntry(
 export const ooxmlInspector: ContainerInspector = {
   matches: (buf) => startsWith(buf, ZIP_MAGIC),
   async inspect(buf) {
-    assertCentralDirectoryEntryCount(buf);
+    const centralNames = readCentralDirectoryNames(buf) ?? [];
     const zip = await JSZip.loadAsync(buf);
     assertEntryCount(Object.keys(zip.files).length);
     const manifest = await readCappedText(zip, CONTENT_TYPES_PART);
     if (manifest === undefined)
       throw new Error(`Missing ${CONTENT_TYPES_PART}`);
 
-    const types = parseContentTypes(manifest);
-    const parts = Object.values(zip.files)
+    // Excel names entries from the central directory, JSZip from the local headers.
+    // Judge every name either one reports, so neither can hide a part from us.
+    const localNames = Object.values(zip.files)
       .filter((entry) => !entry.dir)
-      .map((entry) => ({
-        name: entry.name,
-        contentType: types.resolve(entry.name),
-      }));
+      .map((entry) => entry.name);
+    const centralFileNames = centralNames.filter((name) => !name.endsWith('/'));
+
+    const types = parseContentTypes(manifest);
+    const parts = [...new Set([...localNames, ...centralFileNames])].map(
+      (name) => ({ name, contentType: types.resolve(name) }),
+    );
 
     const reasons = parts.flatMap((part) =>
       reasonsForEntry(part.name, part.contentType),
@@ -73,6 +77,19 @@ export const ooxmlInspector: ContainerInspector = {
         detail: 'Package has no spreadsheet workbook part',
       });
     }
+    if (!sameNames(localNames, centralFileNames)) {
+      reasons.push({
+        code: 'UNPARSEABLE',
+        detail: 'Central directory and local header entry names disagree',
+      });
+    }
     return reasons;
   },
 };
+
+function sameNames(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((name, i) => name === sortedB[i]);
+}
