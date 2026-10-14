@@ -9,6 +9,10 @@ None are synthesized or hand-edited.
 | `clean.xls` | One sheet, cell A1 = "clean". Saved as Excel 97-2004. | accepted |
 | `clean.xlsm` | Saved as macro-enabled .xlsm, but with no VBA module. Proves "capable of macros" is not "has macros". | accepted |
 | `clean.xlsb` | Saved as .xlsb, no VBA module. | accepted |
+| `clean.xlsx` | Plain .xlsx, one cell. | accepted |
+| `xlsm-xlm.xlsm` | Excel 4.0 macro sheet saved into a macro-enabled .xlsm (`xl/macrosheets/sheet1.xml`), no VBA. | rejected: `XLM_MACRO_SHEET` |
+| `xlsb-xlm.xlsb` | Excel 4.0 macro sheet saved into an .xlsb (`xl/macrosheets/sheet1.bin`), no VBA. | rejected: `XLM_MACRO_SHEET` |
+| `encrypted.xls` | Legacy .xls saved with an open password (`fixture-password`); BIFF `FilePass` record. | rejected: `ENCRYPTED` |
 | `xls-xlm.xls` | An Excel 4.0 macro sheet with `=HALT()` in A1, plus a worksheet. Saved as Excel 97-2004. | rejected: `XLM_MACRO_SHEET` |
 | `encrypted.xlsx` | Saved as .xlsx with an open password (`fixture-password`). Excel stores this as an OLE2 container holding `EncryptionInfo` and `EncryptedPackage`. | rejected: `ENCRYPTED` |
 
@@ -25,6 +29,10 @@ osascript libs/macro-detection/scripts/make-fixtures.applescript xls-xlm.xls "$C
 osascript libs/macro-detection/scripts/make-fixtures.applescript encrypted.xlsx "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsm "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsb "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsx "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript xlsm-xlm.xlsm "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript xlsb-xlm.xlsb "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript encrypted.xls "$C"
 ```
 
 ## VBA fixtures
@@ -38,10 +46,17 @@ container directory first:
 ```sh
 osascript libs/macro-detection/scripts/make-fixtures.applescript xls-vba.xls "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript vba.xlsb "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript xls-vba-xlm.xls "$C"
 ```
+
+Opening `vba.xlsm` makes Excel ask "Enable macros?". Scripting cannot suppress
+that on macOS. Answer "Disable Macros" (the VBA project is still carried
+through Save As), or set Excel > Settings > Security & Privacy > Macro Security
+to "Disable all macros without notification" while regenerating.
 
 | File | Contents | Expected verdict |
 | --- | --- | --- |
 | `vba.xlsm` | Hand-made macro-enabled workbook with one empty `Sub`. | rejected: `VBA_PROJECT` |
 | `xls-vba.xls` | `vba.xlsm` re-saved as Excel 97-2004. | rejected: `VBA_PROJECT` |
 | `vba.xlsb` | `vba.xlsm` re-saved as Excel binary. | rejected: `VBA_PROJECT` |
+| `xls-vba-xlm.xls` | `vba.xlsm` plus an Excel 4.0 macro sheet, saved as Excel 97-2004. | rejected: `VBA_PROJECT` and `XLM_MACRO_SHEET` |
