@@ -3,3 +3,7 @@ packages:
   - 'libs/*'
 allowBuilds:
   '@nestjs/core': false
+  '@parcel/watcher': false
+  '@swc/core': false
+  nx: false
+  unrs-resolver: false
