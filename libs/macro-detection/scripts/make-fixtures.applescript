@@ -1,7 +1,11 @@
 -- Generates the binary spreadsheet fixtures with real Microsoft Excel (macOS).
--- Usage: osascript make-fixtures.applescript <fixture-name> <output-dir>
--- Excel is sandboxed, so files are written inside its container, then the
--- caller copies them out. See ../src/test-support/fixtures/README.md.
+-- Usage: osascript make-fixtures.applescript <fixture-name> <dir>
+-- Excel is sandboxed, so <dir> must be inside its container; the caller copies
+-- the results out. See ../src/test-support/fixtures/README.md.
+--
+-- Excel's AppleScript dictionary cannot create VBA modules, so the VBA
+-- fixtures (xls-vba.xls, vba.xlsb) are converted from <dir>/vba.xlsm, which
+-- must be authored by hand once (a workbook containing one Sub).
 
 on run argv
 	set fixtureName to item 1 of argv
@@ -10,11 +14,22 @@ on run argv
 
 	tell application "Microsoft Excel"
 		set display alerts to false
-		set wb to make new workbook
+		if fixtureName is "xls-vba.xls" or fixtureName is "vba.xlsb" then
+			open workbook workbook file name (outDir & "/vba.xlsm")
+		else
+			make new workbook
+		end if
 		try
+			set wb to active workbook
 			if fixtureName is "clean.xls" then
 				set value of cell "A1" of active sheet to "clean"
 				save workbook as wb filename target file format Excel98to2004 file format
+			else if fixtureName is "clean.xlsm" then
+				set value of cell "A1" of active sheet to "clean"
+				save workbook as wb filename target file format macro enabled XML file format
+			else if fixtureName is "clean.xlsb" then
+				set value of cell "A1" of active sheet to "clean"
+				save workbook as wb filename target file format Excel binary file format
 			else if fixtureName is "xls-xlm.xls" then
 				set macroSheet to make new macro sheet at before sheet 1 of wb
 				set formula of cell "A1" of macroSheet to "=HALT()"
@@ -22,6 +37,10 @@ on run argv
 			else if fixtureName is "encrypted.xlsx" then
 				set value of cell "A1" of active sheet to "secret"
 				save workbook as wb filename target file format Excel XML file format password "fixture-password"
+			else if fixtureName is "xls-vba.xls" then
+				save workbook as wb filename target file format Excel98to2004 file format
+			else if fixtureName is "vba.xlsb" then
+				save workbook as wb filename target file format Excel binary file format
 			else
 				error "Unknown fixture " & fixtureName
 			end if

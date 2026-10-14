@@ -12,6 +12,8 @@ const fixture = (name: string) =>
 
 describe.each([
   ['clean.xls', 'accepted', []],
+  ['clean.xlsm', 'accepted', []],
+  ['clean.xlsb', 'accepted', []],
   ['xls-xlm.xls', 'rejected', ['XLM_MACRO_SHEET']],
   ['encrypted.xlsx', 'rejected', ['ENCRYPTED']],
 ] as const)('real fixture %s', (name, verdict, codes) => {
@@ -34,6 +36,4 @@ describe('real fixtures needing VBA (cannot be scripted; see README)', () => {
   it.todo('rejects xls-vba.xls as VBA_PROJECT');
   it.todo('rejects vba.xlsm as VBA_PROJECT');
   it.todo('rejects vba.xlsb as VBA_PROJECT');
-  it.todo('accepts a clean .xlsm saved by Excel (no VBA)');
-  it.todo('accepts a clean .xlsb saved by Excel (no VBA)');
 });
