@@ -32,7 +32,6 @@
       }
       #result {
         margin-top: 1.5rem;
-        scroll-margin-top: 1rem;
       }
       .summary {
         font-size: 1.1rem;
@@ -216,7 +215,6 @@
           showResults(data.results);
           // The results already name every file, so free the space the list used.
           selected.replaceChildren();
-          result.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (error) {
           showMessage('error', 'Network error. Nothing was checked.');
         }
