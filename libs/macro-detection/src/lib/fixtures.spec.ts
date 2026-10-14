@@ -28,6 +28,9 @@ describe.each([
   ['not-a-spreadsheet.docx', 'rejected', ['NOT_A_SPREADSHEET']],
   ['encrypted.xlsx', 'rejected', ['ENCRYPTED']],
   ['encrypted.xls', 'rejected', ['ENCRYPTED']],
+  ['truncated-clean.xlsx', 'rejected', ['UNPARSEABLE']],
+  ['truncated-vba.xlsm', 'rejected', ['UNPARSEABLE']],
+  ['truncated-vba.xls', 'rejected', ['UNPARSEABLE']],
 ] as const)('real fixture %s', (name, verdict, codes) => {
   let result: InspectionResult;
 
@@ -41,5 +44,29 @@ describe.each([
 
   it('reports the expected reason codes', () => {
     expect(result.reasons.map((r) => r.code)).toEqual(codes);
+  });
+});
+
+// A damaged macro file must never read as clean: cut each one at every 1% mark.
+describe.each([
+  'vba.xlsm',
+  'vba.xlsb',
+  'vba.xlam',
+  'xls-vba.xls',
+  'xls-xlm.xls',
+  'xlsm-xlm.xlsm',
+  'xlsb-xlm.xlsb',
+  'xls-vba-xlm.xls',
+])('truncated copies of %s', (name) => {
+  it('are never accepted', async () => {
+    const full = fixture(name);
+    const acceptedAtPercent: number[] = [];
+    for (let percent = 0; percent < 100; percent++) {
+      const cut = full.slice(0, Math.floor((full.length * percent) / 100));
+      if ((await inspectSpreadsheet(cut)).verdict === 'accepted') {
+        acceptedAtPercent.push(percent);
+      }
+    }
+    expect(acceptedAtPercent).toEqual([]);
   });
 });

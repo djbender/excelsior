@@ -15,6 +15,9 @@ None are synthesized or hand-edited.
 | `encrypted.xls`          | Legacy .xls saved with an open password (`fixture-password`); BIFF `FilePass` record.                                                              | rejected: `ENCRYPTED`         |
 | `not-a-spreadsheet.pdf`  | A real PDF written by Excel (`%PDF-1.3`).                                                                                                          | rejected: `NOT_A_SPREADSHEET` |
 | `not-a-spreadsheet.docx` | A real Word document written by Word (`word/document.xml`, no `xl/` parts). Valid OOXML, but not a workbook.                                       | rejected: `NOT_A_SPREADSHEET` |
+| `truncated-clean.xlsx`   | `clean.xlsx` cut to half its size; the ZIP central directory is gone.                                                                              | rejected: `UNPARSEABLE`       |
+| `truncated-vba.xlsm`     | `vba.xlsm` cut to half its size.                                                                                                                   | rejected: `UNPARSEABLE`       |
+| `truncated-vba.xls`      | `xls-vba.xls` cut to half its size (OLE2).                                                                                                         | rejected: `UNPARSEABLE`       |
 | `xls-xlm.xls`            | An Excel 4.0 macro sheet with `=HALT()` in A1, plus a worksheet. Saved as Excel 97-2004.                                                           | rejected: `XLM_MACRO_SHEET`   |
 | `encrypted.xlsx`         | Saved as .xlsx with an open password (`fixture-password`). Excel stores this as an OLE2 container holding `EncryptionInfo` and `EncryptedPackage`. | rejected: `ENCRYPTED`         |
 
@@ -36,6 +39,16 @@ osascript libs/macro-detection/scripts/make-fixtures.applescript xlsm-xlm.xlsm "
 osascript libs/macro-detection/scripts/make-fixtures.applescript xlsb-xlm.xlsb "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript encrypted.xls "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript not-a-spreadsheet.pdf "$C"
+```
+
+The `truncated-*` files are plain byte prefixes of other fixtures, no Office
+involved:
+
+```sh
+F=libs/macro-detection/src/test-support/fixtures
+head -c $(( $(stat -f %z "$F/clean.xlsx") / 2 )) "$F/clean.xlsx" > "$F/truncated-clean.xlsx"
+head -c $(( $(stat -f %z "$F/vba.xlsm") / 2 )) "$F/vba.xlsm" > "$F/truncated-vba.xlsm"
+head -c $(( $(stat -f %z "$F/xls-vba.xls") / 2 )) "$F/xls-vba.xls" > "$F/truncated-vba.xls"
 ```
 
 Word fixtures use a separate script, and Word has its own container:
