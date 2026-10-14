@@ -24,6 +24,7 @@ describe.each([
   ['xlsm-xlm.xlsm', 'rejected', ['XLM_MACRO_SHEET']],
   ['xlsb-xlm.xlsb', 'rejected', ['XLM_MACRO_SHEET']],
   ['xls-vba-xlm.xls', 'rejected', ['VBA_PROJECT', 'XLM_MACRO_SHEET']],
+  ['not-a-spreadsheet.pdf', 'rejected', ['NOT_A_SPREADSHEET']],
   ['encrypted.xlsx', 'rejected', ['ENCRYPTED']],
   ['encrypted.xls', 'rejected', ['ENCRYPTED']],
 ] as const)('real fixture %s', (name, verdict, codes) => {

@@ -42,6 +42,9 @@ on run argv
 			else if fixtureName is "encrypted.xlsx" then
 				set value of cell "A1" of active sheet to "secret"
 				save workbook as wb filename target file format Excel XML file format password "fixture-password"
+			else if fixtureName is "not-a-spreadsheet.pdf" then
+				set value of cell "A1" of active sheet to "not a spreadsheet"
+				save workbook as wb filename target file format PDF file format
 			else if fixtureName is "clean.xlsx" then
 				set value of cell "A1" of active sheet to "clean"
 				save workbook as wb filename target file format Excel XML file format

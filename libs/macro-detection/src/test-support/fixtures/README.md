@@ -13,6 +13,7 @@ None are synthesized or hand-edited.
 | `xlsm-xlm.xlsm` | Excel 4.0 macro sheet saved into a macro-enabled .xlsm (`xl/macrosheets/sheet1.xml`), no VBA. | rejected: `XLM_MACRO_SHEET` |
 | `xlsb-xlm.xlsb` | Excel 4.0 macro sheet saved into an .xlsb (`xl/macrosheets/sheet1.bin`), no VBA. | rejected: `XLM_MACRO_SHEET` |
 | `encrypted.xls` | Legacy .xls saved with an open password (`fixture-password`); BIFF `FilePass` record. | rejected: `ENCRYPTED` |
+| `not-a-spreadsheet.pdf` | A real PDF written by Excel (`%PDF-1.3`). | rejected: `NOT_A_SPREADSHEET` |
 | `xls-xlm.xls` | An Excel 4.0 macro sheet with `=HALT()` in A1, plus a worksheet. Saved as Excel 97-2004. | rejected: `XLM_MACRO_SHEET` |
 | `encrypted.xlsx` | Saved as .xlsx with an open password (`fixture-password`). Excel stores this as an OLE2 container holding `EncryptionInfo` and `EncryptedPackage`. | rejected: `ENCRYPTED` |
 
@@ -33,6 +34,7 @@ osascript libs/macro-detection/scripts/make-fixtures.applescript clean.xlsx "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript xlsm-xlm.xlsm "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript xlsb-xlm.xlsb "$C"
 osascript libs/macro-detection/scripts/make-fixtures.applescript encrypted.xls "$C"
+osascript libs/macro-detection/scripts/make-fixtures.applescript not-a-spreadsheet.pdf "$C"
 ```
 
 ## VBA fixtures
