@@ -14,6 +14,10 @@ const CONTENT_TYPES_PART = '[Content_Types].xml';
 const VBA_CONTENT_TYPE = /vbaproject/i;
 const MACRO_SHEET_CONTENT_TYPE = /macrosheet/i;
 const VBA_ENTRY_NAME = /vbaproject\.bin$/i;
+// Main part of an Excel package: xlsx/xltx, and the macroEnabled xlsm/xltm/xlam/xlsb.
+// Only used to confirm the package is a workbook, never to reject on its own.
+const WORKBOOK_MAIN_CONTENT_TYPE =
+  /spreadsheetml\.(sheet|template)\.main|ms-excel\.(sheet(\.binary)?|template|addin)\.macroEnabled\.main/i;
 
 function reasonsForEntry(
   name: string,
@@ -48,10 +52,27 @@ export const ooxmlInspector: ContainerInspector = {
       throw new Error(`Missing ${CONTENT_TYPES_PART}`);
 
     const types = parseContentTypes(manifest);
-    return Object.values(zip.files)
+    const parts = Object.values(zip.files)
       .filter((entry) => !entry.dir)
-      .flatMap((entry) =>
-        reasonsForEntry(entry.name, types.resolve(entry.name)),
-      );
+      .map((entry) => ({
+        name: entry.name,
+        contentType: types.resolve(entry.name),
+      }));
+
+    const reasons = parts.flatMap((part) =>
+      reasonsForEntry(part.name, part.contentType),
+    );
+    const hasWorkbook = parts.some(
+      (part) =>
+        part.contentType !== undefined &&
+        WORKBOOK_MAIN_CONTENT_TYPE.test(part.contentType),
+    );
+    if (!hasWorkbook) {
+      reasons.push({
+        code: 'NOT_A_SPREADSHEET',
+        detail: 'Package has no spreadsheet workbook part',
+      });
+    }
+    return reasons;
   },
 };

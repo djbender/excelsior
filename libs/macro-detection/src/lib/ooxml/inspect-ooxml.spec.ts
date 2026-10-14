@@ -3,9 +3,12 @@ import {
   buildOoxml,
   contentTypes,
   MACRO_SHEET,
+  MAIN_XLSB,
   MAIN_XLSM,
   MAIN_XLSX,
   VBA_PROJECT,
+  WORD_MAIN,
+  WORKBOOK_PART,
   WORKSHEET,
 } from '../../test-support/ooxml.js';
 import { inspectSpreadsheet } from '../inspect-spreadsheet.js';
@@ -44,6 +47,7 @@ describe('inspectSpreadsheet: OOXML', () => {
           '[Content_Types].xml': contentTypes({
             defaults: { ...xmlDefaults, bin: VBA_PROJECT },
           }),
+          ...WORKBOOK_PART,
           'xl/vbaProject.bin': 'binary',
         }),
       ['VBA_PROJECT'],
@@ -57,6 +61,7 @@ describe('inspectSpreadsheet: OOXML', () => {
             defaults: { ...xmlDefaults, dat: 'application/octet-stream' },
             overrides: { '/xl/innocent.dat': VBA_PROJECT },
           }),
+          ...WORKBOOK_PART,
           'xl/innocent.dat': 'binary',
         }),
       ['VBA_PROJECT'],
@@ -67,6 +72,7 @@ describe('inspectSpreadsheet: OOXML', () => {
       () =>
         buildOoxml({
           '[Content_Types].xml': contentTypes({ defaults: xmlDefaults }),
+          ...WORKBOOK_PART,
           'XL/VbaProject.BIN': 'binary',
         }),
       ['VBA_PROJECT'],
@@ -80,6 +86,7 @@ describe('inspectSpreadsheet: OOXML', () => {
             defaults: xmlDefaults,
             overrides: { '/xl/worksheets/sheet1.xml': MACRO_SHEET },
           }),
+          ...WORKBOOK_PART,
           'xl/worksheets/sheet1.xml': '<macrosheet/>',
         }),
       ['XLM_MACRO_SHEET'],
@@ -93,6 +100,7 @@ describe('inspectSpreadsheet: OOXML', () => {
             defaults: { ...xmlDefaults, bin: VBA_PROJECT },
             overrides: { '/xl/macrosheets/sheet1.xml': MACRO_SHEET },
           }),
+          ...WORKBOOK_PART,
           'xl/vbaProject.bin': 'binary',
           'xl/macrosheets/sheet1.xml': '<macrosheet/>',
         }),
@@ -107,7 +115,63 @@ describe('inspectSpreadsheet: OOXML', () => {
             defaults: xmlDefaults,
             overrides: { '/xl/macrosheets/sheet1.xml': WORKSHEET },
           }),
+          ...WORKBOOK_PART,
           'xl/macrosheets/sheet1.xml': '<worksheet/>',
+        }),
+      [],
+      [],
+    ],
+    [
+      'a Word document (no spreadsheet main part)',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: xmlDefaults,
+            overrides: { '/word/document.xml': WORD_MAIN },
+            workbookMain: null,
+          }),
+          'word/document.xml': '<document/>',
+        }),
+      ['NOT_A_SPREADSHEET'],
+      ['workbook'],
+    ],
+    [
+      'a Word macro document (VBA and no spreadsheet main part)',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: { ...xmlDefaults, bin: VBA_PROJECT },
+            overrides: { '/word/document.xml': WORD_MAIN },
+            workbookMain: null,
+          }),
+          'word/document.xml': '<document/>',
+          'word/vbaProject.bin': 'binary',
+        }),
+      ['VBA_PROJECT', 'NOT_A_SPREADSHEET'],
+      ['word/vbaProject.bin', 'workbook'],
+    ],
+    [
+      'a package whose /xl/workbook.xml is declared as a plain worksheet',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: xmlDefaults,
+            overrides: { '/xl/workbook.xml': WORKSHEET },
+          }),
+          'xl/workbook.xml': '<worksheet/>',
+        }),
+      ['NOT_A_SPREADSHEET'],
+      ['workbook'],
+    ],
+    [
+      'an .xlsb-style workbook main type',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: { ...xmlDefaults, bin: 'application/octet-stream' },
+            overrides: { '/xl/workbook.bin': MAIN_XLSB },
+          }),
+          'xl/workbook.bin': 'binary',
         }),
       [],
       [],
