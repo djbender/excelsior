@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spreadsheet Macro Check</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      form > * {
+        margin-right: 0.5rem;
+      }
+      #result {
+        margin-top: 1.5rem;
+      }
+      .verdict {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+      .accepted {
+        color: #146c2e;
+      }
+      .rejected,
+      .error {
+        color: #a61b1b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Spreadsheet Macro Check</h1>
+    <form id="form">
+      <label for="file">Spreadsheet</label>
+      <input id="file" name="file" type="file" required />
+      <button type="submit">Inspect</button>
+    </form>
+    <div id="result" aria-live="polite"></div>
+
+    <script>
+      const form = document.getElementById('form');
+      const fileInput = document.getElementById('file');
+      const result = document.getElementById('result');
+
+      function show(className, headline, reasons) {
+        result.replaceChildren();
+        const verdict = document.createElement('div');
+        verdict.className = 'verdict ' + className;
+        verdict.textContent = headline;
+        result.append(verdict);
+        if (reasons && reasons.length) {
+          const list = document.createElement('ul');
+          for (const reason of reasons) {
+            const item = document.createElement('li');
+            item.textContent = reason.code + ': ' + reason.detail;
+            list.append(item);
+          }
+          result.append(list);
+        }
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const file = fileInput.files[0];
+        if (!file) return;
+        const body = new FormData();
+        body.append('file', file);
+        show('', 'Inspecting…');
+        try {
+          const response = await fetch('/api/inspect', {
+            method: 'POST',
+            body,
+          });
+          if (!response.ok) {
+            show(
+              'error',
+              'Server error (' +
+                response.status +
+                '). The file was not checked.',
+            );
+            return;
+          }
+          const data = await response.json();
+          show(
+            data.verdict,
+            data.verdict === 'accepted' ? 'ACCEPTED' : 'REJECTED',
+            data.reasons,
+          );
+        } catch (error) {
+          show('error', 'Network error. The file was not checked.');
+        }
+      });
+    </script>
+  </body>
+</html>
