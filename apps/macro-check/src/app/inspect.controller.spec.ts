@@ -1,23 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
 import { MAX_INPUT_BYTES } from '@org/macro-detection';
-import JSZip from 'jszip';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestApp } from './test-app';
-
-const CONTENT_TYPES =
-  '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-  '<Default Extension="xml" ContentType="application/xml"/>' +
-  '<Default Extension="bin" ContentType="application/vnd.ms-office.vbaProject"/>' +
-  '</Types>';
-
-async function workbook(withVba: boolean): Promise<Buffer> {
-  const zip = new JSZip();
-  zip.file('[Content_Types].xml', CONTENT_TYPES);
-  zip.file('xl/workbook.xml', '<workbook/>');
-  if (withVba) zip.file('xl/vbaProject.bin', 'binary');
-  return zip.generateAsync({ type: 'nodebuffer' });
-}
+import { workbook } from './test-workbook';
 
 describe('POST /api/inspect', () => {
   let app: INestApplication;

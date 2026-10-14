@@ -15,7 +15,7 @@
     "eslint.config.cjs",
     "eslint.config.mjs",
     "src/**/*.spec.ts",
-    "src/**/test-app.ts"
+    "src/**/test-*.ts"
   ],
   "references": [
     {
