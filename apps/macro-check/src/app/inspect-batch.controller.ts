@@ -12,8 +12,16 @@ import {
   inspectSpreadsheet,
   type InspectionResult,
 } from '@org/macro-detection';
+import { BoundedMemoryStorage } from './bounded-memory-storage';
 
-export const MAX_BATCH_FILES = 20;
+/** Combined size of all files in one batch. Each file is still capped by MAX_INPUT_BYTES. */
+export const MAX_BATCH_BYTES = 2 * MAX_INPUT_BYTES;
+/**
+ * Backstop, not a feature: the size cap only counts file bytes, so without this an
+ * upload of thousands of empty files would still cost one inspection and one result
+ * row each.
+ */
+export const MAX_BATCH_FILES = 500;
 
 export interface BatchEntry extends InspectionResult {
   name: string;
@@ -24,8 +32,9 @@ export class InspectBatchController {
   @Post('inspect-batch')
   @HttpCode(200)
   @UseInterceptors(
-    // No `storage` option: multer defaults to memory, so uploads never touch disk.
+    // Memory only: uploads never touch disk. The storage caps the combined size.
     FilesInterceptor('files', MAX_BATCH_FILES, {
+      storage: new BoundedMemoryStorage(MAX_BATCH_BYTES),
       limits: { fileSize: MAX_INPUT_BYTES, files: MAX_BATCH_FILES },
     }),
   )
@@ -34,7 +43,7 @@ export class InspectBatchController {
   ): Promise<{ results: BatchEntry[] }> {
     if (!files?.length) {
       throw new BadRequestException(
-        `Attach between 1 and ${MAX_BATCH_FILES} files in the "files" field`,
+        'Attach one or more files in the "files" field',
       );
     }
     // One at a time: bounds peak CPU and memory regardless of batch size.
