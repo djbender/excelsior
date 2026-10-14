@@ -10,7 +10,7 @@
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "build": "nx run-many -t build",
-    "all": "pnpm format && pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "all": "nx format:check && nx run-many -t typecheck,lint,test,build"
   },
   "private": true,
   "dependencies": {
