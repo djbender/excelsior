@@ -70,12 +70,4 @@ describe('inspectSpreadsheet: OLE2', () => {
       expect(result.reasons.map((r) => r.code)).toEqual(['ENCRYPTED']);
     });
   });
-
-  // Real Excel-produced binaries; see src/test-support/fixtures/README.md.
-  it.todo('rejects a real .xls with a VBA project (fixture: xls-vba.xls)');
-  it.todo('rejects a real .xls with an XLM macro sheet (fixture: xls-xlm.xls)');
-  it.todo('accepts a real clean .xls (fixture: clean.xls)');
-  it.todo(
-    'rejects a real password-protected .xlsx as ENCRYPTED (fixture: encrypted.xlsx)',
-  );
 });
