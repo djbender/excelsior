@@ -46,6 +46,14 @@ describe('GET /', () => {
     expect(response.text).toContain("'result-card");
   });
 
+  it('checks the combined size limit before uploading', () => {
+    expect(response.text).toContain('MAX_TOTAL_BYTES');
+  });
+
+  it('no longer limits the number of files', () => {
+    expect(response.text).not.toContain('MAX_FILES');
+  });
+
   it('posts to the batch endpoint', () => {
     expect(response.text).toContain('/api/inspect-batch');
   });

@@ -80,7 +80,7 @@
     <div id="result" aria-live="polite"></div>
 
     <script>
-      const MAX_FILES = 20;
+      const MAX_TOTAL_BYTES = 50 * 1024 * 1024;
       const form = document.getElementById('form');
       const dropzone = document.getElementById('dropzone');
       const fileInput = document.getElementById('file');
@@ -153,8 +153,14 @@
         event.preventDefault();
         const files = Array.from(fileInput.files);
         if (!files.length) return;
-        if (files.length > MAX_FILES) {
-          showMessage('error', 'Choose at most ' + MAX_FILES + ' files.');
+        const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+        if (totalBytes > MAX_TOTAL_BYTES) {
+          showMessage(
+            'error',
+            'These files total ' +
+              (totalBytes / 1048576).toFixed(1) +
+              ' MB. The limit is 50 MB per batch. Remove some and try again.',
+          );
           return;
         }
         const body = new FormData();
@@ -168,7 +174,7 @@
           if (response.status === 413) {
             showMessage(
               'error',
-              'A file is over the 25 MB limit. Nothing was checked.',
+              'The upload is over the size limit (25 MB per file, 50 MB per batch). Nothing was checked.',
             );
             return;
           }
