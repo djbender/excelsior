@@ -2,6 +2,7 @@
   "name": "@djbender/source",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@12.8.1",
   "scripts": {
     "serve": "nx serve @djbender/macro-check --tui=false",
     "format": "prettier --write . --log-level warn",
