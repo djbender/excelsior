@@ -5,6 +5,7 @@ import { inspectSpreadsheet } from './inspect-spreadsheet.js';
 import type { InspectionResult } from './types.js';
 
 // Real Excel-produced binaries; provenance in src/test-support/fixtures/README.md.
+// Files under crafted/ are the exception: hand-edited, see crafted/README.md.
 const fixture = (name: string) =>
   new Uint8Array(
     readFileSync(join(__dirname, '../test-support/fixtures', name)),
@@ -48,6 +49,29 @@ describe.each([
 
   it('reports the expected reason codes', () => {
     expect(result.reasons.map((r) => r.code)).toEqual(codes);
+  });
+});
+
+// Hand-edited from vba.xlsm, real VBA project inside; see fixtures/crafted/README.md.
+describe.each([
+  ['crafted/charref.xlsm'],
+  ['crafted/percent-partname.xlsm'],
+  ['crafted/prefixed.xlsm'],
+])('crafted fixture %s', (name) => {
+  let result: InspectionResult;
+
+  beforeAll(async () => {
+    result = await inspectSpreadsheet(fixture(name));
+  });
+
+  it('is rejected', () => {
+    expect(result.verdict).toBe('rejected');
+  });
+
+  // The manifest is not in the form Excel writes, so it is refused before any
+  // part is judged: the detector never has to agree with Excel's XML parser.
+  it('reports the manifest as unparseable', () => {
+    expect(result.reasons.map((r) => r.code)).toEqual(['UNPARSEABLE']);
   });
 });
 
