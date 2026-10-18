@@ -137,4 +137,12 @@ describe('POST /api/inspect-batch', () => {
       .attach('files', Buffer.alloc(MAX_INPUT_BYTES + 1), 'huge.xlsx');
     expect(response.status).toBe(413);
   });
+
+  it('responds 400 to text fields alongside the files', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/inspect-batch')
+      .field('padding', 'x'.repeat(1024))
+      .attach('files', await workbook(false), 'ok.xlsx');
+    expect(response.status).toBe(400);
+  });
 });
