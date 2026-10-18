@@ -33,9 +33,15 @@ export class InspectBatchController {
   @HttpCode(200)
   @UseInterceptors(
     // Memory only: uploads never touch disk. The storage caps the combined size.
+    // No text fields: multer would otherwise buffer any number of them.
     FilesInterceptor('files', MAX_BATCH_FILES, {
       storage: new BoundedMemoryStorage(MAX_BATCH_BYTES),
-      limits: { fileSize: MAX_INPUT_BYTES, files: MAX_BATCH_FILES },
+      limits: {
+        fileSize: MAX_INPUT_BYTES,
+        files: MAX_BATCH_FILES,
+        fields: 0,
+        parts: MAX_BATCH_FILES,
+      },
     }),
   )
   async inspect(

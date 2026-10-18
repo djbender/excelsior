@@ -84,4 +84,12 @@ describe('POST /api/inspect', () => {
       .attach('file', Buffer.alloc(MAX_INPUT_BYTES + 1), 'huge.xlsx');
     expect(response.status).toBe(413);
   });
+
+  it('responds 400 to text fields alongside the file', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/inspect')
+      .field('padding', 'x'.repeat(1024))
+      .attach('file', await workbook(false), 'one.xlsx');
+    expect(response.status).toBe(400);
+  });
 });

@@ -68,6 +68,51 @@ describe('inspectSpreadsheet: OOXML', () => {
       ['xl/innocent.dat'],
     ],
     [
+      'a VBA content type hidden behind character references',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: { ...xmlDefaults, dat: 'application/octet-stream' },
+            overrides: {
+              '/xl/innocent.dat': 'application/vnd.ms-office.&#118;baProject',
+            },
+          }),
+          ...WORKBOOK_PART,
+          'xl/innocent.dat': 'binary',
+        }),
+      ['UNPARSEABLE'],
+      ['[Content_Types].xml'],
+    ],
+    [
+      'a VBA Override whose PartName is percent-encoded',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml': contentTypes({
+            defaults: { ...xmlDefaults, dat: 'application/octet-stream' },
+            overrides: { '/xl/%69nnocent.dat': VBA_PROJECT },
+          }),
+          ...WORKBOOK_PART,
+          'xl/innocent.dat': 'binary',
+        }),
+      ['UNPARSEABLE'],
+      ['[Content_Types].xml'],
+    ],
+    [
+      'a VBA Override in a namespace-prefixed element',
+      () =>
+        buildOoxml({
+          '[Content_Types].xml':
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" xmlns:ct="http://schemas.openxmlformats.org/package/2006/content-types">' +
+            `<Override PartName="/xl/workbook.xml" ContentType="${MAIN_XLSX}"/>` +
+            `<ct:Override PartName="/xl/innocent.dat" ContentType="${VBA_PROJECT}"/>` +
+            '</Types>',
+          ...WORKBOOK_PART,
+          'xl/innocent.dat': 'binary',
+        }),
+      ['UNPARSEABLE'],
+      ['[Content_Types].xml'],
+    ],
+    [
       'an undeclared vbaproject.bin (name match, mixed case)',
       () =>
         buildOoxml({

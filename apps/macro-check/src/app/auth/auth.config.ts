@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHmac, randomBytes } from 'node:crypto';
 
 export const AUTH_CONFIG = Symbol('AUTH_CONFIG');
 
@@ -13,14 +13,19 @@ export interface AuthConfig {
 
 /**
  * Reads the gate settings from the environment. Without SESSION_SECRET the key
- * is random per process, so sessions end whenever the app restarts.
+ * is random per process, so sessions end whenever the app restarts. The key is
+ * also bound to the password, so changing APP_PASSWORD ends every session.
  */
 export function authConfigFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): AuthConfig {
+  const password = env.APP_PASSWORD || undefined;
+  const base = env.SESSION_SECRET || randomBytes(32).toString('hex');
   return {
-    password: env.APP_PASSWORD || undefined,
-    secret: env.SESSION_SECRET || randomBytes(32).toString('hex'),
+    password,
+    secret: createHmac('sha256', base)
+      .update(password ?? '')
+      .digest('hex'),
     secureCookie: env.NODE_ENV === 'production',
   };
 }
