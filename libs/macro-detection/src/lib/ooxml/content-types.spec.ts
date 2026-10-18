@@ -36,6 +36,17 @@ describe('parseContentTypes', () => {
     expect(types.resolve('xl/stuff.xml')).toBe('application/x-b');
   });
 
+  it('folds only ASCII case, as Excel does', () => {
+    const types = parseContentTypes(
+      xml(
+        '<Default Extension="bin" ContentType="vba"/>' +
+          '<Override PartName="/xl/prjk.bin" ContentType="benign"/>',
+      ),
+    );
+    // KELVIN SIGN: toLowerCase() would turn it into "k" and pick the Override.
+    expect(types.resolve('xl/prjK.bin')).toBe('vba');
+  });
+
   it('accepts attributes in any order', () => {
     const types = parseContentTypes(
       xml('<Override ContentType="application/x-b" PartName="/a.xml"/>'),
@@ -154,6 +165,23 @@ describe('parseContentTypes', () => {
     ],
     ['an unclosed root', `<Types xmlns="${ct}">`],
     ['content after the root', xml('') + '<Types/>'],
+    // toLowerCase folds these to ASCII; Excel's comparison does not.
+    [
+      'a non-ASCII PartName (KELVIN SIGN)',
+      xml('<Override PartName="/xl/prjK.bin" ContentType="x"/>'),
+    ],
+    [
+      'a non-ASCII Extension (LONG S)',
+      xml('<Default Extension="binſ" ContentType="x"/>'),
+    ],
+    [
+      'a non-ASCII ContentType',
+      xml('<Override PartName="/a.bin" ContentType="xé"/>'),
+    ],
+    [
+      'a control character in a value',
+      xml('<Override PartName="/a\u0000.bin" ContentType="x"/>'),
+    ],
   ])('throws on %s', (_name, manifest) => {
     expect(() => parseContentTypes(manifest)).toThrow();
   });

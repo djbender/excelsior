@@ -57,6 +57,7 @@ describe.each([
   ['crafted/charref.xlsm'],
   ['crafted/percent-partname.xlsm'],
   ['crafted/prefixed.xlsm'],
+  ['crafted/unicode-fold.xlsm'],
 ])('crafted fixture %s', (name) => {
   let result: InspectionResult;
 

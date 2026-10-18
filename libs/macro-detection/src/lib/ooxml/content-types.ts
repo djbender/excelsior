@@ -4,8 +4,10 @@ export interface ContentTypes {
 }
 
 const NAMESPACE = String.raw`http://schemas\.openxmlformats\.org/package/2006/content-types`;
-// No character an XML parser or a URI could decode: `&` (entities), `<`, `%`.
-const VALUE = `(?:"[^"<&%]*"|'[^'<&%]*')`;
+// Printable ASCII only, and no character an XML parser or a URI could decode:
+// `&` (entities), `<`, `%`. Non-ASCII is out because JavaScript and Excel fold
+// its case differently; tabs and newlines because XML rewrites them to spaces.
+const VALUE = String.raw`(?:"[^"<&%\x00-\x1F\x7F-￿]*"|'[^'<&%\x00-\x1F\x7F-￿]*')`;
 const ATTRIBUTES = String.raw`(?:\s+[A-Za-z]+\s*=\s*${VALUE})*`;
 
 // Sticky, so each one must match exactly where the previous one stopped.
@@ -54,8 +56,11 @@ function attributesOf(
   return attributes;
 }
 
+// ASCII-only case folding, as OPC and Excel compare part names. toLowerCase()
+// would also fold e.g. KELVIN SIGN to "k", merging names Excel keeps apart.
 const normalizePart = (name: string): string =>
-  '/' + name.replace(/^\/+/, '').toLowerCase();
+  '/' +
+  name.replace(/^\/+/, '').replace(/[A-Z]/g, (letter) => letter.toLowerCase());
 
 /**
  * Reads the manifest only in the plain form Excel writes: an optional XML
