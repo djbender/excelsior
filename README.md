@@ -148,15 +148,18 @@ prefixes could in theory hide a macro part; this is untested.
 
 ## Development
 
-| Command          | Does                                                         |
-| ---------------- | ------------------------------------------------------------ |
-| `pnpm serve`     | Dev server with file watching (no Nx TUI)                    |
-| `pnpm all`       | Format check, typecheck, lint, test and build: the full gate |
-| `pnpm format`    | Format with Prettier                                         |
-| `pnpm typecheck` | Typecheck every project                                      |
-| `pnpm lint`      | Lint every project                                           |
-| `pnpm test`      | Run the Vitest suites                                        |
-| `pnpm build`     | Build every project                                          |
+| Command          | Does                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `pnpm serve`     | Dev server with file watching (no Nx TUI)                          |
+| `pnpm check`     | Format check, typecheck, lint, test and build on affected projects |
+| `pnpm check:all` | Same gate on every project and file (what CI runs)                 |
+| `pnpm format`    | Format with Prettier                                               |
+| `pnpm typecheck` | Typecheck affected projects                                        |
+| `pnpm lint`      | Lint affected projects                                             |
+| `pnpm test`      | Run the Vitest suites of affected projects                         |
+| `pnpm build`     | Build affected projects                                            |
+
+"Affected" means changed since `main`, per `nx affected`.
 
 Tests are Vitest. The app's integration tests use supertest against the real
 `AppModule`.

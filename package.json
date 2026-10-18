@@ -6,12 +6,13 @@
   "scripts": {
     "serve": "nx serve @djbender/macro-check --tui=false",
     "format": "prettier --write . --log-level warn",
-    "format:check": "prettier --check .",
-    "typecheck": "nx run-many -t typecheck",
-    "lint": "nx run-many -t lint",
-    "test": "nx run-many -t test",
-    "build": "nx run-many -t build",
-    "all": "nx format:check && nx run-many -t typecheck,lint,test,build"
+    "format:check": "nx format:check",
+    "typecheck": "nx affected -t typecheck",
+    "lint": "nx affected -t lint",
+    "test": "nx affected -t test",
+    "build": "nx affected -t build",
+    "check": "nx format:check && nx affected -t typecheck,lint,test,build",
+    "check:all": "nx format:check --all && nx run-many -t typecheck,lint,test,build"
   },
   "private": true,
   "dependencies": {
