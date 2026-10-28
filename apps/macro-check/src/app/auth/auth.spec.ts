@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestApp } from '../test-app';
+import { authConfigFromEnv } from './auth.config';
 import { createSession, isValidSession, SESSION_TTL_MS } from './session';
 
 const CONFIG = { password: 'hunter2', secret: 's3cret', secureCookie: false };
@@ -127,6 +128,22 @@ describe('password gate', () => {
       .get('/')
       .set('Cookie', `session=${Date.now() + 60_000}.deadbeef`);
     expect(response.status).toBe(302);
+  });
+});
+
+describe('authConfigFromEnv', () => {
+  const env = { SESSION_SECRET: 'fixed' };
+
+  it('keeps the signing key stable for the same password', () => {
+    expect(authConfigFromEnv({ ...env, APP_PASSWORD: 'a' }).secret).toBe(
+      authConfigFromEnv({ ...env, APP_PASSWORD: 'a' }).secret,
+    );
+  });
+
+  it('changes the signing key when the password changes', () => {
+    expect(authConfigFromEnv({ ...env, APP_PASSWORD: 'a' }).secret).not.toBe(
+      authConfigFromEnv({ ...env, APP_PASSWORD: 'b' }).secret,
+    );
   });
 });
 

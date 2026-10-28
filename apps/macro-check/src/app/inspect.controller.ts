@@ -19,8 +19,9 @@ export class InspectController {
   @HttpCode(200)
   @UseInterceptors(
     // No `storage` option: multer defaults to memory, so uploads never touch disk.
+    // No text fields: multer would otherwise buffer any number of them.
     FileInterceptor('file', {
-      limits: { fileSize: MAX_INPUT_BYTES, files: 1 },
+      limits: { fileSize: MAX_INPUT_BYTES, files: 1, fields: 0, parts: 1 },
     }),
   )
   inspect(

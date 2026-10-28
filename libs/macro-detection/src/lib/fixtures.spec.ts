@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { buildCrafted, CRAFTED_NAMES } from '../test-support/crafted.js';
 import { inspectSpreadsheet } from './inspect-spreadsheet.js';
 import type { InspectionResult } from './types.js';
 
@@ -48,6 +49,27 @@ describe.each([
 
   it('reports the expected reason codes', () => {
     expect(result.reasons.map((r) => r.code)).toEqual(codes);
+  });
+});
+
+// Rewritten from vba.xlsm, real VBA project inside; see test-support/crafted.md.
+describe.each(CRAFTED_NAMES)('crafted fixture %s', (name) => {
+  let result: InspectionResult;
+
+  beforeAll(async () => {
+    result = await inspectSpreadsheet(
+      await buildCrafted(fixture('vba.xlsm'), name),
+    );
+  });
+
+  it('is rejected', () => {
+    expect(result.verdict).toBe('rejected');
+  });
+
+  // The manifest is not in the form Excel writes, so it is refused before any
+  // part is judged: the detector never has to agree with Excel's XML parser.
+  it('reports the manifest as unparseable', () => {
+    expect(result.reasons.map((r) => r.code)).toEqual(['UNPARSEABLE']);
   });
 });
 
