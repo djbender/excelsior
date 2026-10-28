@@ -80,7 +80,7 @@
     "@djbender/macro-detection": "workspace:*",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-express": "^11.2.8",
     "@nestjs/throttler": "^6.7.1",
     "helmet": "^8.3.0",
     "jszip": "^3.10.2",
