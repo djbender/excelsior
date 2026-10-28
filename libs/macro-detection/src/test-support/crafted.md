@@ -1,9 +1,9 @@
 # Crafted fixtures
 
-Unlike the files one directory up, these are **hand-edited**: each is the
-Excel-made [`../vba.xlsm`](../README.md) rewritten by
-[`scripts/make-crafted-fixtures.mjs`](../../../../scripts/make-crafted-fixtures.mjs).
-They exist to test detector bypasses that Excel itself would never write.
+Unlike the files in [`fixtures/`](fixtures/README.md), these are **not
+committed**: [`crafted.ts`](crafted.ts) builds each one in memory at test time
+by rewriting the Excel-made `fixtures/vba.xlsm`. They exist to test detector
+bypasses that Excel itself would never write.
 
 Every file keeps the real `vbaProject.bin` from `vba.xlsm`, byte for byte, but:
 
@@ -49,13 +49,14 @@ relationship pointed at the VBA. Excel opened it with no macro prompt: without
 the VBA content type it does not load the project. The content type alone
 decides, so that variant was dropped.
 
-## Regenerating
+## Writing them to disk
 
-From the repo root:
+To open them in Excel, from the repo root:
 
 ```sh
-node libs/macro-detection/scripts/make-crafted-fixtures.mjs
+node libs/macro-detection/scripts/make-crafted-fixtures.mjs [out-dir]
 ```
 
-Output is deterministic (fixed timestamps), so rerunning should leave
-`git status` clean.
+`out-dir` defaults to `tmp/crafted-fixtures` (gitignored). Output is
+deterministic (fixed timestamps), byte-identical to the files the Excel results
+above were recorded against.
