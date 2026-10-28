@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { buildCrafted, CRAFTED_NAMES } from '../test-support/crafted.js';
 import { inspectSpreadsheet } from './inspect-spreadsheet.js';
 import type { InspectionResult } from './types.js';
 
 // Real Excel-produced binaries; provenance in src/test-support/fixtures/README.md.
-// Files under crafted/ are the exception: hand-edited, see crafted/README.md.
 const fixture = (name: string) =>
   new Uint8Array(
     readFileSync(join(__dirname, '../test-support/fixtures', name)),
@@ -52,17 +52,14 @@ describe.each([
   });
 });
 
-// Hand-edited from vba.xlsm, real VBA project inside; see fixtures/crafted/README.md.
-describe.each([
-  ['crafted/charref.xlsm'],
-  ['crafted/percent-partname.xlsm'],
-  ['crafted/prefixed.xlsm'],
-  ['crafted/unicode-fold.xlsm'],
-])('crafted fixture %s', (name) => {
+// Rewritten from vba.xlsm, real VBA project inside; see test-support/crafted.md.
+describe.each(CRAFTED_NAMES)('crafted fixture %s', (name) => {
   let result: InspectionResult;
 
   beforeAll(async () => {
-    result = await inspectSpreadsheet(fixture(name));
+    result = await inspectSpreadsheet(
+      await buildCrafted(fixture('vba.xlsm'), name),
+    );
   });
 
   it('is rejected', () => {
