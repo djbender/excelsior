@@ -96,7 +96,7 @@ function readBoundSheet(data: Uint8Array, version: number): BoundSheet {
   const type = data.length > 5 ? data[5] : 0;
   const characters = data.length > 6 ? data[6] : 0;
 
-  let name = '';
+  let name: string;
   if (version >= BIFF8) {
     const wide = data.length > 7 && (data[7] & 1) === 1;
     const bytes = data.subarray(8, 8 + characters * (wide ? 2 : 1));
