@@ -67,6 +67,45 @@ RUN pnpm install --prefer-offline --frozen-lockfile --ignore-scripts \
   the root `package.json` has no lifecycle scripts, so the build doesn't need any.
 - **`rm -rf` in the same `RUN`.** Dev `node_modules` never land in a layer, so the
   layer that changes on every push is mostly `dist`, and the cache export stays small.
+- **`docs` in `.dockerignore`.** Doc-only changes don't invalidate the `COPY` layer.
+
+### Measured in CI
+
+| Run                                 | Docker job | Cache export | `fetch` layer       | Install + prune |
+| ----------------------------------- | ---------- | ------------ | ------------------- | --------------- |
+| Baseline (no `fetch`, no `rm`)      | 70s        | 36s          | n/a                 | 14s             |
+| Cold (new `fetch` layer)            | 101s       | 55s          | 6.7s (ran)          | 12.6s           |
+| Warm (source change, lockfile same) | 84s        | 16s          | ~21s (cache import) | 13.6s           |
+
+The `rm -rf` worked: export dropped from 36s to 16s. In CI the `fetch` layer is
+a net loss, though. On a `gha` cache hit BuildKit still has to download and
+unpack the ~300MB store layer before the next step can run, which is slower than
+pulling the same tarballs from the npm registry. Install + prune barely moves,
+because that step is dominated by the supply-chain policy check (registry
+metadata) and the nx build, not tarball downloads.
+
+### Why keep `fetch` anyway
+
+Production deploys are `git push dokku main`, which builds this Dockerfile on
+the Dokku host. That host keeps a persistent local layer cache, so a cached
+`fetch` layer costs nothing to reuse and deploys skip the package download
+until the lockfile changes. `mode=max` stays as well, for the same reason:
+dropping it to `mode=min` would speed up CI but give up build-stage caching
+for good.
+
+### If CI time starts to matter
+
+Switch the CI cache from `gha` to a ghcr.io registry cache with zstd:
+
+```yaml
+cache-from: type=registry,ref=ghcr.io/djbender/excelsior:buildcache
+cache-to: type=registry,ref=ghcr.io/djbender/excelsior:buildcache,mode=max,compression=zstd
+```
+
+Only the `registry` and `local` backends support cache compression; `gha` has no
+compression option. This needs `docker/login-action` with `GITHUB_TOKEN`,
+`packages: write` on the job, and `ignore-error=true` on `cache-to` so fork PRs
+(which can't push) don't fail. It hasn't been measured here.
 
 ## Alternative: `pnpm deploy`
 
@@ -97,3 +136,5 @@ Not adopted here:
 - [pnpm deploy](https://pnpm.io/cli/deploy)
 - [pnpm: Working with Docker](https://pnpm.io/docker)
 - [pnpm fetch](https://pnpm.io/cli/fetch)
+- [Docker: GitHub Actions cache](https://docs.docker.com/build/cache/backends/gha/)
+- [Docker: Cache storage backends](https://docs.docker.com/build/cache/backends/) (compression support)
