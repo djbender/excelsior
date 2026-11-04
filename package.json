@@ -32,7 +32,7 @@
     "@nx/eslint": "23.3.0",
     "@nx/eslint-plugin": "23.3.0",
     "@nx/js": "23.3.0",
-    "@nx/nest": "23.3.0",
+    "@nx/nest": "24.0.3",
     "@nx/node": "23.3.0",
     "@nx/vitest": "23.3.0",
     "@nx/web": "23.3.0",
