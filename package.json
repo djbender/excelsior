@@ -30,7 +30,7 @@
     "@nestjs/schematics": "^12.0.10",
     "@nestjs/testing": "^11.0.0",
     "@nx/eslint": "23.3.0",
-    "@nx/eslint-plugin": "23.3.0",
+    "@nx/eslint-plugin": "24.0.3",
     "@nx/js": "23.3.0",
     "@nx/nest": "23.3.0",
     "@nx/node": "23.3.0",
