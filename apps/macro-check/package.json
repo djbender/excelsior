@@ -93,7 +93,7 @@
     "@types/express": "^5.0.6",
     "@types/multer": "^2.3.0",
     "@types/supertest": "^7.2.1",
-    "supertest": "^7.3.1",
+    "supertest": "^7.3.2",
     "unplugin-swc": "^2.0.0"
   }
 }
